@@ -1,0 +1,45 @@
+{
+  "name": "@web-native-js/observables",
+  "title": "Observables",
+  "description": "Application components and browser APIs implemented as Observable objects.",
+  "keywords": [
+    "observables",
+    "observer"
+  ],
+  "homepage": "https://www.web-native.dev",
+  "icon": "https://www.web-native.dev/icon.svg",
+  "author": {
+    "name": "Oxford Harrison",
+    "email": "oxharriscreative@gmail.com"
+  },
+  "version": "0.1.0",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/web-native/observables.git"
+  },
+  "funding": {
+    "type": "patreon",
+    "url": "https://patreon.com/ox_harris"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack --config ../webpack.config.observables.js",
+    "watch": "webpack --watch"
+  },
+  "dependencies": {
+    "@web-native-js/commons": "file:../commons",
+    "@web-native-js/observer": "file:../observer"
+  },
+  "devDependencies": {
+    "webpack": "^4.41.0",
+    "webpack-cli": "^3.3.9"
+  },
+  "browser": {
+    "fs": false
+  },
+  "bugs": {
+    "url": "https://github.com/web-native/observables/issues"
+  }
+}
