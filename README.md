@@ -24,7 +24,7 @@ Observables can be used with the **[Observer](https://github.com/web-native/obse
 </script>
 ```
 
-They can also be used as bindings for **[Scoped Scripts](https://github.com/web-native/chtml) API:**
+They can also be used as bindings for **[Scoped Scripts](https://github.com/web-native/chtml)** where we don't have to manually track changes:
 
 ```html
 <!-- Include a component - e.g Web-Monentization -->
@@ -35,7 +35,9 @@ They can also be used as bindings for **[Scoped Scripts](https://github.com/web-
 <!-- Application -->
 <script>
     let webmo = new WM.WebMonetization(paymentPointer);
-    document.bind('webmo', webmo);
+    document.bind({
+        webmo: webmo,
+    });
 </script>
 
 <!-- Document -->
@@ -48,7 +50,7 @@ They can also be used as bindings for **[Scoped Scripts](https://github.com/web-
 
 ## Documentation
 
-[Visit the Docs](https://docs.web-native.dev/observables) or 
+[Visit the Docs](https://docs.web-native.dev/observables)
 
 ## Issues
 
