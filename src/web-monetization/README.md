@@ -160,3 +160,65 @@ Here, we did away with query selectors by taking our (presentational) logic to t
 We could also forget about manually observing our `monetization` instance as Scoped JS bindings are reactive!
 
 \* Again, you can copy/paste the code to try.
+
+**A Little More User Control**
+
+It would be a good idea to let the user decide when to begin streaming payment. This is easy to do using the `.start()` and `.stop()` methods of the API. This time, we let the user call these methods instead of hard-coding that ourself.
+
+Below, we've introduced a clickable anchor tag that toggles the current `monetization` instance on its `.start()` and `.stop()` methods.
+
+```html
+<html>
+
+  <head>
+    <title>Monentized Page</title>
+  </head>
+
+  <body>
+
+    <h1>My Blog</h1>
+    <div style="margin-bottom: 20px;">
+        <a href="#">
+            <script type="scoped">
+                this.innerHTML = monetization.state === 'started' ? '(View with Ads)' : '(View without Ads)';
+                this.addEventListener('click', () => {
+                    if (monetization.state === 'started') {
+                        monetization.stop();
+                    } else {
+                        monetization.start();
+                    }
+                });
+            </script>
+        </a>
+    </div>
+
+    <div style="padding: 20px; border: 1px solid gainsboro;">
+      <h2>Exclusive Content</h2>
+      <script type="scoped">
+        this.style.display = monetization.state === 'started' ? 'block' : 'none';
+      </script>
+    </div>
+
+    <div style="padding: 20px; border: 1px solid gainsboro;">
+      <h2>Ads</h2>
+      <script type="scoped">
+        this.style.display = monetization.state === 'started' ? 'none' : 'block';
+      </script>
+    </div>
+
+    <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
+    <script src="https://unpkg.com/@web-native-js/chtml/dist/main.js"></script>
+    <script>
+    
+        const WebMonetization = window.WN.WebMonetization;
+        const monetization = WebMonetization.init('$ilp.example.com/me');
+        document.bind({
+            monetization: monetization,
+        });
+
+    </script>
+
+  </body>
+
+</html>
+```
