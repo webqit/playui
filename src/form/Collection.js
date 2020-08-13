@@ -7,7 +7,6 @@ import _each from '@web-native-js/commons/obj/each.js';
 import _isFunction from '@web-native-js/commons/js/isFunction.js';
 import _isClass from '@web-native-js/commons/js/isClass.js';
 import GenericCollection from '../collection/Collection.js';
-import Registry from '../Registry.js';
 import Input from './Input.js';
 
 /**

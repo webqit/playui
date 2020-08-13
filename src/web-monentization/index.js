@@ -3,7 +3,7 @@
  * @imports
  */
 import Observer from '@web-native-js/observer';
-import ENV from './ENV.js';
+import ENV from '../ENV.js';
 
 /**
  * ---------------------------
@@ -40,27 +40,18 @@ export default class WebMonetization {
         monetization.addEventListener('monetizationpending', e => {
             Observer.set(this, {
                 state: 'pending',
-                pending: e.detail,
-                started: false,
-                stopped: false,
-            });
+            }, e.detail);
         });
         monetization.addEventListener('monetizationstart', e => {
             currentTotal = 0;
             Observer.set(this, {
                 state: 'started',
-                started: e.detail,
-                stopped: false,
-                pending: false,
-            });
+            }, e.detail);
         });
         monetization.addEventListener('monetizationstop', e => {
             Observer.set(this, {
                 state: 'stopped',
-                stopped: e.detail,
-                pending: false,
-                started: false,
-            });
+            }, e.detail);
         });
         var scale, currentTotal = 0, sessionTotal = 0;
         monetization.addEventListener('monetizationprogress', e => {
@@ -71,17 +62,18 @@ export default class WebMonetization {
             currentTotal += progressAmount;
             sessionTotal += progressAmount;
             Observer.set(this, {
-                progress: e.detail,
+                progress: {
+                    currentTotal: {
+                        amount: currentTotal,
+                        value: (currentTotal * Math.pow(10, - scale)).toFixed(scale),
+                    },
+                    sessionTotal: {
+                        amount: sessionTotal,
+                        value: (sessionTotal * Math.pow(10, - scale)).toFixed(scale),
+                    },
+                },
                 currency: scale,
-                currentTotal: {
-                    amount: currentTotal,
-                    value: (currentTotal * Math.pow(10, - scale)).toFixed(scale),
-                },
-                sessionTotal: {
-                    amount: sessionTotal,
-                    value: (sessionTotal * Math.pow(10, - scale)).toFixed(scale),
-                },
-           });
+           }, e.detail);
         });
 	}
 
@@ -89,7 +81,7 @@ export default class WebMonetization {
 	 * Starts a new monetization stream by adding a meta tag
      * to the document.
 	 *
-	 * @return void
+	 * @return this
 	 */
 	start() {
 		if (!this.getTag(this.paymentPointer)) {
@@ -104,18 +96,20 @@ export default class WebMonetization {
 			window.document.querySelector('head').appendChild(monetizationMeta);
         }
         this.assertSupport(this.params.prompt);
+        return this;
     }
     
 	/**
 	 * Stops an ongoing monetization stream by removing a meta tag
      * from the document.
 	 *
-	 * @return void
+	 * @return this
 	 */
 	stop() {
 		if (monetizationMeta = this.getTag()) {
             monetizationMeta.remove();
-		}
+        }
+        return this;
     }
     
 	/**
