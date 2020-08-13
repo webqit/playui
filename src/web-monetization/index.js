@@ -131,7 +131,6 @@ export default class WebMonetization {
 	 * @return bool
 	 */
 	assertSupport(prompt) {
-        var head = window.document.querySelector('head');
 		if (!window.document.monetization) {
             if (prompt) {
                 var extensionUrl, browserType = ENV.detect();
@@ -146,7 +145,7 @@ export default class WebMonetization {
                     extensionUrl = 'https://chrome.google.com/webstore/detail/coil/locbifcbeldmnphbgkdigjmkbfkhbnca';
                 }
                 if (extensionUrl) {
-                    if (window.confirm("This version of " + browserType + " does not support the Web WebMonetization API! \r\nWould you like to add the Web WebMonetization extension?")) {
+                    if (window.confirm("This version of " + browserType + " does not support the Web Monetization API! \r\nWould you like to add the Web Monetization extension?")) {
                         window.open(extensionUrl, '_blank');
                     };
                 } else {
