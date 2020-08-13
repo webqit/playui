@@ -8,11 +8,9 @@
 
 <!-- /BADGES -->
 
-This is a collection of application components and browser APIs implemented as Observable objects.
+This is a collection of application components and browser APIs implemented as Observable objects. Visit individual components for documentation:
 
-## Collection
-
-+ [Web Monentization](https://github.com/web-native/observables/tree/master/src/web-monentization)
++ [Web Monetization](https://github.com/web-native/observables/tree/master/src/web-monetization)
 + [Form](https://github.com/web-native/observables/tree/master/src/form)
 + [Collection](https://github.com/web-native/observables/tree/master/src/collection)
 
