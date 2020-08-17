@@ -46,8 +46,8 @@ This implementation offers us many benefits:
 
     ```js
     Observer.observe(monetization, 'progress', progress => {
-        console.log(progress.currentTotal);   // {amount:0, value:0}
-        console.log(progress.sessionTotal);   // {amount:0, value:0}
+        console.log(progress.value.currentTotal);   // {amount:0, value:0}
+        console.log(progress.value.sessionTotal);   // {amount:0, value:0}
     });
     ```
 
