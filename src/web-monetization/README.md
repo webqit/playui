@@ -36,7 +36,7 @@ This implementation offers us many benefits:
     });
     ```
 
-+ It can automatically detect browser support for the Web Monetization API and can (optionally) suggest the appropriate browser extension for the user.
++ It automatically detects lack of browser support for the Web Monetization API and can (optionally) suggest the appropriate browser extension for the user.
 
     ```js
     let stream1 = WebMonetization.init('$ilp.example.com/me', {prompt: true});
