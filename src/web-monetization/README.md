@@ -139,7 +139,7 @@ Life gets a lot easier using Observables together with the [Scoped JS](https://g
     </div>
 
     <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
-    <script src="https://unpkg.com/@web-native-js/chtml/dist/main.js"></script>
+    <script src="https://unpkg.com/@web-native-js/chtml@1.1.3/dist/main.js"></script>
     <script>
     
         const WebMonetization = window.WN.WebMonetization;
@@ -207,7 +207,7 @@ Below, we've introduced a clickable anchor tag that toggles the current `monetiz
     </div>
 
     <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
-    <script src="https://unpkg.com/@web-native-js/chtml/dist/main.js"></script>
+    <script src="https://unpkg.com/@web-native-js/chtml@1.1.3/dist/main.js"></script>
     <script>
     
         const WebMonetization = window.WN.WebMonetization;
