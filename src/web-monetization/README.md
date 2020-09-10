@@ -17,7 +17,7 @@ This implementation offers us many benefits:
 
     ```js
     Observer.observe(monetization, 'state', state => {
-        console.log(state.value);           // pending | started | stopped
+        console.log(state.value);          // pending | started | stopped
         console.log(monetization.state);   // pending | started | stopped
     });
     ```
