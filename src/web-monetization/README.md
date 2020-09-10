@@ -36,7 +36,7 @@ This implementation offers us many benefits:
     });
     ```
 
-+ It can automatically detect browser support for the Web Monetization API and can (optionally) suggest the appropriate browser extension for the user.
++ It automatically detects lack of browser support for the Web Monetization API and can (optionally) suggest the appropriate browser extension for the user.
 
     ```js
     let stream1 = WebMonetization.init('$ilp.example.com/me', {prompt: true});
@@ -46,8 +46,8 @@ This implementation offers us many benefits:
 
     ```js
     Observer.observe(monetization, 'progress', progress => {
-        console.log(progress.currentTotal);   // {amount:0, value:0}
-        console.log(progress.sessionTotal);   // {amount:0, value:0}
+        console.log(progress.value.currentTotal);   // {amount:0, value:0}
+        console.log(progress.value.sessionTotal);   // {amount:0, value:0}
     });
     ```
 
@@ -139,7 +139,7 @@ Life gets a lot easier using Observables together with the [Scoped JS](https://g
     </div>
 
     <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
-    <script src="https://unpkg.com/@web-native-js/chtml/dist/main.js"></script>
+    <script src="https://unpkg.com/@web-native-js/chtml@1.1.3/dist/main.js"></script>
     <script>
     
         const WebMonetization = window.WN.WebMonetization;
@@ -207,7 +207,7 @@ Below, we've introduced a clickable anchor tag that toggles the current `monetiz
     </div>
 
     <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
-    <script src="https://unpkg.com/@web-native-js/chtml/dist/main.js"></script>
+    <script src="https://unpkg.com/@web-native-js/chtml@1.1.3/dist/main.js"></script>
     <script>
     
         const WebMonetization = window.WN.WebMonetization;
