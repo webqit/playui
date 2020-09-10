@@ -1,4 +1,4 @@
-# Web Monetization Observable
+# Observable Web Monetization API
 
 This is an *Observable* wrapper for the [Web-Monetization API](https://webmonetization.org/). It offers the Web Monetization API as a regular JavaScript object that can be [observed](https://github.com/web-native/observer) live - for use in *reactive* UI development.
 
