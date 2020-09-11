@@ -7,7 +7,7 @@
     "observer"
   ],
   "homepage": "https://onephrase.dev/package/observables/form",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -28,9 +28,9 @@
     "access": "public"
   },
   "dependencies": {
-    "@web-native-js/observer": "^1.0.7",
-    "@onephrase/observable-collection": "^0.0.0",
-    "@onephrase/util": "^0.5.5"
+    "@onephrase/observable-collection": "^0.0.1",
+    "@onephrase/util": "^0.5.5",
+    "@web-native-js/observer": "^1.0.7"
   },
   "devDependencies": {
     "webpack": "^4.41.0",
