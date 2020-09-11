@@ -3,15 +3,15 @@
  * @imports
  */
 import Observer from '@web-native-js/observer';
-import _isArray from '@web-native-js/commons/js/isArray.js';
-import _isEmpty from '@web-native-js/commons/js/isEmpty.js';
-import _isFunction from '@web-native-js/commons/js/isFunction.js';
-import _isClass from '@web-native-js/commons/js/isClass.js';
-import _arrFirst from '@web-native-js/commons/arr/first.js';
-import _arrLast from '@web-native-js/commons/arr/last.js';
-import _following from '@web-native-js/commons/arr/following.js';
-import _preceding from '@web-native-js/commons/arr/preceding.js';
-import _each from '@web-native-js/commons/obj/each.js';
+import _isArray from '@onephrase/util/js/isArray.js';
+import _isEmpty from '@onephrase/util/js/isEmpty.js';
+import _isFunction from '@onephrase/util/js/isFunction.js';
+import _isClass from '@onephrase/util/js/isClass.js';
+import _arrFirst from '@onephrase/util/arr/first.js';
+import _arrLast from '@onephrase/util/arr/last.js';
+import _following from '@onephrase/util/arr/following.js';
+import _preceding from '@onephrase/util/arr/preceding.js';
+import _each from '@onephrase/util/obj/each.js';
 import CollectionBase from './CollectionBase.js';
 import Item from './Item.js';
 

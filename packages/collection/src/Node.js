@@ -3,11 +3,11 @@
  * @imports
  */
 import Observer from '@web-native-js/observer';
-import _each from '@web-native-js/commons/obj/each.js';
-import _isArray from '@web-native-js/commons/js/isArray.js';
-import _isNull from '@web-native-js/commons/js/isNull.js';
-import _isNumeric from '@web-native-js/commons/js/isNumeric.js';
-import _mixin from '@web-native-js/commons/js/mixin.js';
+import _each from '@onephrase/util/obj/each.js';
+import _isArray from '@onephrase/util/js/isArray.js';
+import _isNull from '@onephrase/util/js/isNull.js';
+import _isNumeric from '@onephrase/util/js/isNumeric.js';
+import _mixin from '@onephrase/util/js/mixin.js';
 import Collection from './Collection.js';
 import Item from './Item.js';
 

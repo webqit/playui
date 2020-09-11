@@ -3,13 +3,13 @@
  * @imports
  */
 import Observer from '@web-native-js/observer';
-import _each from '@web-native-js/commons/obj/each.js';
-import _remove from '@web-native-js/commons/arr/remove.js';
-import _pushUnique from '@web-native-js/commons/arr/pushUnique.js';
-import _unique from '@web-native-js/commons/arr/unique.js';
-import _isArray from '@web-native-js/commons/js/isArray.js';
-import _wrapped from '@web-native-js/commons/str/wrapped.js';
-import _unwrap from '@web-native-js/commons/str/unwrap.js';
+import _each from '@onephrase/util/obj/each.js';
+import _remove from '@onephrase/util/arr/remove.js';
+import _pushUnique from '@onephrase/util/arr/pushUnique.js';
+import _unique from '@onephrase/util/arr/unique.js';
+import _isArray from '@onephrase/util/js/isArray.js';
+import _wrapped from '@onephrase/util/str/wrapped.js';
+import _unwrap from '@onephrase/util/str/unwrap.js';
 
 /**
  * ---------------------------

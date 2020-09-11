@@ -3,9 +3,9 @@
  * @imports
  */
 import Observer from '@web-native-js/observer';
-import _isEmpty from '@web-native-js/commons/js/isEmpty.js';
-import _each from '@web-native-js/commons/obj/each.js';
-import Item from '../collection/Item.js';
+import _isEmpty from '@onephrase/util/js/isEmpty.js';
+import _each from '@onephrase/util/obj/each.js';
+import Item from '../../collection/src/Item.js';
 
 /**
  * ---------------------------

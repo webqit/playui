@@ -3,7 +3,7 @@
  * @imports
  */
 import Observer from '@web-native-js/observer';
-import ENV from '../ENV.js';
+import { detect } from '@onephrase/util/dom/vendor.js';
 
 /**
  * ---------------------------
@@ -133,7 +133,7 @@ export default class WebMonetization {
 	assertSupport(prompt) {
 		if (!window.document.monetization) {
             if (prompt) {
-                var extensionUrl, browserType = ENV.detect();
+                var extensionUrl, browserType = detect();
                 if (browserType.startsWith('ie')) {
                     // Desktop extension
                     extensionUrl = 'https://microsoftedge.microsoft.com/addons/detail/ljionajlbinlfkdnpkloejeoogfgkojm';
