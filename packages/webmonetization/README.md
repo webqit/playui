@@ -5,10 +5,10 @@ This is an *Observable* wrapper for the [Web-Monetization API](https://webmoneti
 Simply include the little script on your page:
 
 ```html
-<script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
+<script src="https://unpkg.com/@onephrase/observable-webmonetization/dist/main.js"></script>
 ```
 ```js
-let monetization = WN.WebMonetization.init(payment_pointer);
+let monetization = OP.WebMonetization.init(payment_pointer);
 ```
 
 This implementation offers us many benefits:
@@ -79,11 +79,11 @@ Using the Observer API above, we could programmatically keep monentized sections
       <h2>Ads</h2>
     </div>
 
-    <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
+    <script src="https://unpkg.com/@onephrase/observable-webmonetization/dist/main.js"></script>
     <script src="https://unpkg.com/@web-native-js/observer/dist/main.js"></script>
     <script>
     
-        const WebMonetization = window.WN.WebMonetization;
+        const WebMonetization = window.OP.WebMonetization;
         const Observer = window.WN.Observer;
 
         const exclusiveSection = document.querySelector('#exclusive');
@@ -138,11 +138,11 @@ Life gets a lot easier using Observables together with the [Scoped JS](https://g
       </script>
     </div>
 
-    <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
-    <script src="https://unpkg.com/@web-native-js/chtml@1.1.3/dist/main.js"></script>
+    <script src="https://unpkg.com/@onephrase/observable-webmonetization/dist/main.js"></script>
+    <script src="https://unpkg.com/@web-native-js/chtml/dist/main.js"></script>
     <script>
     
-        const WebMonetization = window.WN.WebMonetization;
+        const WebMonetization = window.OP.WebMonetization;
         const monetization = WebMonetization.init('$ilp.example.com/me').start();
         document.bind({
             monetization: monetization,
@@ -206,11 +206,11 @@ Below, we've introduced a clickable anchor tag that toggles the current `monetiz
       </script>
     </div>
 
-    <script src="https://unpkg.com/@web-native-js/observables/dist/web-monetization.js"></script>
-    <script src="https://unpkg.com/@web-native-js/chtml@1.1.3/dist/main.js"></script>
+    <script src="https://unpkg.com/@onephrase/observable-webmonetization/dist/main.js"></script>
+    <script src="https://unpkg.com/@web-native-js/chtml/dist/main.js"></script>
     <script>
     
-        const WebMonetization = window.WN.WebMonetization;
+        const WebMonetization = window.OP.WebMonetization;
         const monetization = WebMonetization.init('$ilp.example.com/me');
         document.bind({
             monetization: monetization,
