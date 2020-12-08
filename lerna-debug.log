@@ -1,8 +1,0 @@
-48 error Error: Command failed: git push --follow-tags --no-verify --atomic origin master
-48 error Fatal: HttpRequestException encountered.
-48 error bash: /dev/tty: No such device or address
-48 error error: failed to execute prompt script (exit code 1)
-48 error fatal: could not read Username for 'https://github.com': Invalid argument
-48 error
-48 error     at makeError (C:\Users\ox_ha\Documents\CODE\onephrase\observables\node_modules\execa\index.js:174:9)
-48 error     at C:\Users\ox_ha\Documents\CODE\onephrase\observables\node_modules\execa\index.js:278:16

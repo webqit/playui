@@ -1,18 +1,14 @@
 {
-  "name": "@webqit/play-ui",
-  "title": "Play-UI",
-  "description": "WebQit's UI pack.",
+  "name": "@webqit/play-icon-element",
+  "title": "Play Icon Element",
+  "description": "Play Icon Element.",
   "keywords": [
-    "plot-js",
-    "play-js",
-    "plot-css",
-    "play-css",
-    "vivid-css",
-    "async-dom",
-    "webcomponents"
+    "webmonetization",
+    "play-components",
+    "observer"
   ],
-  "homepage": "https://webqit.dev/tooling/play-ui",
-  "version": "0.1.2",
+  "homepage": "https://webqit.dev/tooling/play-ui/play-icon-element",
+  "version": "0.0.1",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -27,14 +23,12 @@
   },
   "main": "src/index.js",
   "scripts": {
-    "build": "webpack --config ./webpack.config.cjs"
+    "prepublish": "webpack --config ../../webpack.config.cjs"
   },
-  "dependencies": {
-    "@webqit/browser-pie": "file:../browser-pie",
-    "@webqit/util": "file:../util"
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
-    "lerna": "^3.22.1",
     "webpack": "^4.41.0",
     "webpack-cli": "^3.3.9"
   },
@@ -52,5 +46,19 @@
   "funding": {
     "type": "patreon",
     "url": "https://patreon.com/ox_harris"
+  },
+  "badges": {
+    "list": [
+      "npmversion",
+      "npmdownloads",
+      "patreon"
+    ],
+    "config": {
+      "patreonUsername": "ox_harris",
+      "githubUsername": "webqit",
+      "githubRepository": "play-ui",
+      "githubSlug": "webqit/play-ui",
+      "npmPackageName": "@webqit/play-icon-element"
+    }
   }
 }
