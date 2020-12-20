@@ -11,8 +11,8 @@
     "async-dom",
     "webcomponents"
   ],
-  "homepage": "https://webqit.dev/tooling/play-ui",
-  "version": "0.1.2",
+  "homepage": "https://webqit.io/tooling/play-ui",
+  "version": "0.1.6",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -26,12 +26,17 @@
     "fs": false
   },
   "main": "src/index.js",
+  "files": [
+    "/packages/plot-js",
+    "/packages/play-js"
+  ],
   "scripts": {
-    "build": "webpack --config ./webpack.config.cjs"
+    "build": "webpack --config ./webpack.config.cjs",
+    "prepublish": "npm run build"
   },
   "dependencies": {
-    "@webqit/browser-pie": "file:../browser-pie",
-    "@webqit/util": "file:../util"
+    "@webqit/browser-pie": "0.0.4",
+    "@webqit/util": "^0.7.0"
   },
   "devDependencies": {
     "lerna": "^3.22.1",

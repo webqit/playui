@@ -5,6 +5,7 @@
 import _each from '@webqit/util/obj/each.js';
 import _beforeLast from '@webqit/util/str/beforeLast.js';
 import _isString from '@webqit/util/js/isString.js';
+import DOMInit from '@webqit/browser-pie/src/dom/index.js';
 
 /**
  * The instantiable PlayUI function.
@@ -26,13 +27,14 @@ export {
 /**
  * Create a prototyper.
  *
- * @param object ob
+ * @param window window
  * @param object params
  * 
  * @return void
  */
-export function build(DOM, modules, depth = 0, params = {}, target = $) {
-    if (!target.prototype.el) {
+export function build(window, modules, depth = 0, params = {}, target = $) {
+    const DOM = DOMInit(window);
+    if (!('el' in target.prototype)) {
         Object.defineProperty(target.prototype, 'el', {get: function() {
             if (_isString(this.__el)) {
                 this.__el = DOM.el(this.__el);
@@ -42,7 +44,7 @@ export function build(DOM, modules, depth = 0, params = {}, target = $) {
     }
     _each(modules, (name, fn) => {
         if (depth) {
-            build(DOM, modules[name], depth - 1, params, target);
+            build(window, modules[name], depth - 1, params, target);
         } else {
             const instanceFn = function(...args) {
                 return getReturn(this, fn.call(DOM, this.el || DOM.window.document.createElement('div'), ...args), params);

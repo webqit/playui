@@ -7,8 +7,8 @@
     "utility-based-js",
     "play-ui"
   ],
-  "homepage": "https://webqit.dev/tooling/play-ui/plot-js",
-  "version": "0.0.1",
+  "homepage": "https://webqit.io/tooling/play-ui/plot-js",
+  "version": "0.0.5",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,8 +29,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@webqit/browser-pie": "file:../../../browser-pie",
-    "@webqit/util": "file:../../../util"
+    "@webqit/browser-pie": "^0.0.4",
+    "@webqit/util": "^0.7.0"
   },
   "devDependencies": {
     "webpack": "^4.41.0",

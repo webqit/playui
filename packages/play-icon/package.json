@@ -1,13 +1,13 @@
 {
-  "name": "@webqit/play-sequence-element",
-  "title": "Play Sequence Element",
-  "description": "Play Sequence Element.",
+  "name": "@webqit/play-icon",
+  "title": "Play Icon Element",
+  "description": "Play Icon Element.",
   "keywords": [
     "webmonetization",
     "play-components",
     "observer"
   ],
-  "homepage": "https://webqit.dev/tooling/play-ui/play-sequence-element",
+  "homepage": "https://webqit.io/tooling/play-ui/play-icon",
   "version": "0.0.1",
   "license": "MIT",
   "repository": {
@@ -27,10 +27,6 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "@webqit/play-js": "file:../play-js",
-    "@webqit/util": "file:../../../util"
   },
   "devDependencies": {
     "webpack": "^4.41.0",
@@ -62,7 +58,7 @@
       "githubUsername": "webqit",
       "githubRepository": "play-ui",
       "githubSlug": "webqit/play-ui",
-      "npmPackageName": "@webqit/play-sequence-element"
+      "npmPackageName": "@webqit/play-icon"
     }
   }
 }

@@ -1,13 +1,13 @@
 {
-  "name": "@webqit/play-collapsible-element",
-  "title": "Play Collapsible Element",
-  "description": "Play Collapsible Element.",
+  "name": "@webqit/play-sequence",
+  "title": "Play Sequence Element",
+  "description": "Play Sequence Element.",
   "keywords": [
     "webmonetization",
     "play-components",
     "observer"
   ],
-  "homepage": "https://webqit.dev/tooling/play-ui/play-collapsible-element",
+  "homepage": "https://webqit.io/tooling/play-ui/play-sequence",
   "version": "0.0.1",
   "license": "MIT",
   "repository": {
@@ -29,8 +29,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@webqit/play-js": "file:../play-js",
-    "@webqit/util": "file:../../../util"
+    "@webqit/play-js": "^0.0.1",
+    "@webqit/util": "^0.7.0"
   },
   "devDependencies": {
     "webpack": "^4.41.0",
@@ -62,7 +62,7 @@
       "githubUsername": "webqit",
       "githubRepository": "play-ui",
       "githubSlug": "webqit/play-ui",
-      "npmPackageName": "@webqit/play-collapsible-element"
+      "npmPackageName": "@webqit/play-sequence"
     }
   }
 }

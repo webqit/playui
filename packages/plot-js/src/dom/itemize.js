@@ -25,7 +25,7 @@ import _each from '@webqit/util/obj/each.js';
  * @return Promise
  */
 export default function itemize(el, items, renderCallback = null, overflowCallback = null, params = {}) {
-    if (!el.template || !el.template.partials || !_isTypeObject(items)) {
+    if (!el.template || !el.template.exports || !_isTypeObject(items)) {
         return;
     }
     // -----------------
@@ -36,21 +36,21 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
             itemEl = childSelector(el, '[' + itemIndexAttribute + '="' + key + '"]');
         } else {
             // --------------
-            var partials;
-            if (params.itemPartialsName) {
-                partials = el.template.partials[params.itemPartialsName];
+            var exports;
+            if (params.itemExportId) {
+                exports = el.template.exports[params.itemExportId];
             } else {
-                partials = el.template.partials[key];
-                if (_isEmpty(partials) && _isNumeric(key)) {
-                    partials = el.template.partials['#'];
+                exports = el.template.exports[key];
+                if (_isEmpty(exports) && _isNumeric(key)) {
+                    exports = el.template.exports['#'];
                 }
-                if (_isEmpty(partials)) {
-                    partials = el.template.partials['default'];
+                if (_isEmpty(exports)) {
+                    exports = el.template.exports['default'];
                 }
             }
             // --------------
-            if (!_isEmpty(partials)) {
-                itemEl = partials[0].cloneNode(true);
+            if (!_isEmpty(exports)) {
+                itemEl = exports[0].cloneNode(true);
                 var existing = {};
                 _arrFrom(el.children).forEach(_el => {
                     existing[_el.getAttribute(itemIndexAttribute)] = _el;

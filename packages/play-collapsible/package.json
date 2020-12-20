@@ -1,13 +1,13 @@
 {
-  "name": "@webqit/play-icon-element",
-  "title": "Play Icon Element",
-  "description": "Play Icon Element.",
+  "name": "@webqit/play-collapsible",
+  "title": "Play Collapsible Element",
+  "description": "Play Collapsible Element.",
   "keywords": [
     "webmonetization",
     "play-components",
     "observer"
   ],
-  "homepage": "https://webqit.dev/tooling/play-ui/play-icon-element",
+  "homepage": "https://webqit.io/tooling/play-ui/play-collapsible",
   "version": "0.0.1",
   "license": "MIT",
   "repository": {
@@ -27,6 +27,10 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "dependencies": {
+    "@webqit/play-js": "^0.0.1",
+    "@webqit/util": "^0.7.0"
   },
   "devDependencies": {
     "webpack": "^4.41.0",
@@ -58,7 +62,7 @@
       "githubUsername": "webqit",
       "githubRepository": "play-ui",
       "githubSlug": "webqit/play-ui",
-      "npmPackageName": "@webqit/play-icon-element"
+      "npmPackageName": "@webqit/play-collapsible"
     }
   }
 }
