@@ -1,15 +1,26 @@
 # Observables
 
-This is a collection of APIs based on `@web-native-js/observer`. Visit individual components for documentation:
+<!-- BADGES/ -->
 
-+ [Web Monetization](https://github.com/onephrase/observables/tree/master/packages/webmonetization)
-+ [Form](https://github.com/onephrase/observables/tree/master/packages/form)
-+ [Collection](https://github.com/onephrase/observables/tree/master/packages/collection)
+<span class="badge-npmversion"><a href="https://npmjs.org/package/@webqit/play-ui" title="View this project on NPM"><img src="https://img.shields.io/npm/v/@webqit/play-ui.svg" alt="NPM version" /></a></span>
+<span class="badge-npmdownloads"><a href="https://npmjs.org/package/@webqit/play-ui" title="View this project on NPM"><img src="https://img.shields.io/npm/dm/@webqit/play-ui.svg" alt="NPM downloads" /></a></span>
+
+<!-- /BADGES -->
+
+A modern UI library covering layout, design, and UI physics (animations, events and gestures, and UI geometry); introducing *Async DOM*; offering ready-to-use components.
+
+> [Visit project homepage](https://webqit.io/tooling/play-ui).
+
+## Documentation
+Visit individual components for documentation:
++ [Plot JS](https://webqit.io/tooling/play-ui/plot-js)
++ [Play JS](https://webqit.io/tooling/play-ui/play-js)
++ [Plot CSS](https://webqit.io/tooling/play-ui/plot-css)
++ [Play CSS](https://webqit.io/tooling/play-ui/play-css)
++ [Vivid CSS](https://webqit.io/tooling/play-ui/vivid-css)
 
 ## Issues
-
-To report bugs or request features, please submit an [issue](https://github.com/onephrase/observables/issues).
+To report bugs or request features, please submit an [issue](https://github.com/webqit/play-ui/issues).
 
 ## License
-
 MIT.

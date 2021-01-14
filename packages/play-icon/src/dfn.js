@@ -24,7 +24,7 @@ export default function(window) {
         constructor() {
             super();
             this.params = {};
-            this.sizes = {xs: '16', sm: '24', md: '32', lg: '48', xl: '56', xxl: '64'};
+            this.sizes = {xs: '1', sm: '1.5', md: '2', lg: '3', xl: '3.5', xxl: '4'};
         }
 
         /**
@@ -80,9 +80,9 @@ export default function(window) {
          * @return void
          */
         _render() {
-            var _size = this.sizes[this.params.size] || '32';
+            var _size = this.sizes[this.params.size] || '2';
             var _url = this.iconPath + '/' + (this.iconType ? this.iconType + '-' : '') + 'icons.svg';
-            this.innerHTML = `<svg class="bi" width="${_size}" height="${_size}" fill="currentColor">
+            this.innerHTML = `<svg class="bi" width="${_size}em" height="${_size}em" fill="currentColor" style="font-size: initial">
                 <use xlink:href="${_url}#${this.params.name}"/>
             </svg>`;
         }

@@ -25,11 +25,19 @@ import _each from '@webqit/util/obj/each.js';
  * @return Promise
  */
 export default function itemize(el, items, renderCallback = null, overflowCallback = null, params = {}) {
-    if (!el.template || !el.template.exports || !_isTypeObject(items)) {
+    if (!this.window.WQ.OOHTML) {
+        throw new Error('itemize() requires OOHTML to be on this page.');
+    }
+    const itemIndexAttribute = params.itemIndexAttribute || 'data-index';
+    if (getPlayUiBase(el).previousBindings && getPlayUiBase(el).previousBindings !== items) {
+        childSelectorAll(el, '[' + itemIndexAttribute + ']').forEach(_el => _el.remove());
+    }
+    let templateEl = el[this.window.WQ.OOHTML.META.api.templatedep];
+    let templateExportsObject = templateEl ? templateEl[this.window.WQ.OOHTML.META.api.exports] : null;
+    if (!templateEl || !templateExportsObject || !_isTypeObject(items)) {
         return;
     }
     // -----------------
-    const itemIndexAttribute = params.itemIndexAttribute || 'data-index';
     const _set = (key, itemData, isUpdate) => {
         var itemEl;
         if (isUpdate && el.children.length) {
@@ -38,14 +46,14 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
             // --------------
             var exports;
             if (params.itemExportId) {
-                exports = el.template.exports[params.itemExportId];
+                exports = templateExportsObject[params.itemExportId];
             } else {
-                exports = el.template.exports[key];
+                exports = templateExportsObject[key];
                 if (_isEmpty(exports) && _isNumeric(key)) {
-                    exports = el.template.exports['#'];
+                    exports = templateExportsObject['#'];
                 }
                 if (_isEmpty(exports)) {
-                    exports = el.template.exports['default'];
+                    exports = templateExportsObject['default'];
                 }
             }
             // --------------
@@ -67,7 +75,7 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
         }
         if (itemEl) {
             if (_isFunction(renderCallback)) {
-                renderCallback(itemEl, 'bind', itemData, key, isUpdate);
+                renderCallback(itemEl, 'setState', itemData, key, isUpdate);
             }
         }
     };
@@ -77,7 +85,7 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
         if (itemEl) {
             var rspns;
             if (_isFunction(renderCallback)) {
-                rspns = renderCallback(itemEl, 'unbind', oldValue, key);
+                rspns = renderCallback(itemEl, 'clearState', oldValue, key);
             }
             var remove = () => itemEl.remove();
             if (rspns instanceof Promise) {
@@ -90,9 +98,9 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
     // -----------------
     var isUpdate = childSelector(el, '[' + itemIndexAttribute + ']') ? true : false;
     _each(items, (item, key) => _set(item, key, isUpdate));
-    if (params.bind !== false && this.Observer.observe) {
-        if (stub(el).previousBindings) {
-            this.Observer.unobserve(stub(el).previousBindings, null, null, {tags: ['#playui-itemize', itemize, this]});
+    if (params.setState !== false && this.Observer.observe) {
+        if (getPlayUiBase(el).previousBindings) {
+            this.Observer.unobserve(getPlayUiBase(el).previousBindings, null, null, {tags: ['#playui-itemize', itemize, this]});
         }
         this.Observer.observe(items, changes => {
             changes.forEach(entry => {
@@ -106,7 +114,7 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
                 }
             });
         }, {tags: ['#playui-itemize', itemize, this]});
-        stub(el).previousBindings = items;
+        getPlayUiBase(el).previousBindings = items;
     }
     // -----------------
     if (overflowCallback) {
@@ -218,11 +226,13 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
  * 
  * @return object
  */
-export const stub = el => {
-    if (!el['.stub']) {
-        el['.stub'] = {};
+export const getPlayUiBase = el => {
+    var playUIBase, playUIBaseKeySymbol = Symbol.for('.play-ui');
+    if (!(playUIBase = el[playUIBaseKeySymbol])) {
+        playUIBase = {};
+        Object.defineProperty(el, playUIBaseKeySymbol, {value: playUIBase, enumerable: false});
     }
-    return el['.stub'];
+    return playUIBase;
 };
 
 /**
@@ -235,6 +245,9 @@ export const stub = el => {
  */
 export const childSelector = (el, selector) => {
     return _arrFrom(el.children).reduce((match, child) => match || (child.matches(selector) ? child : null), null);
+};
+export const childSelectorAll = (el, selector) => {
+    return _arrFrom(el.children).filter(child => child.matches(selector));
 };
 
 /**

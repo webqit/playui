@@ -8,7 +8,7 @@
     "play-ui"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/plot-js",
-  "version": "0.0.5",
+  "version": "0.0.9",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@webqit/browser-pie": "^0.0.4",
+    "@webqit/browser-pie": "^0.0.5",
     "@webqit/util": "^0.7.0"
   },
   "devDependencies": {
