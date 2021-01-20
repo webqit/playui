@@ -32,7 +32,7 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
     if (getPlayUiBase(el).previousBindings && getPlayUiBase(el).previousBindings !== items) {
         childSelectorAll(el, '[' + itemIndexAttribute + ']').forEach(_el => _el.remove());
     }
-    let templateEl = el[this.window.WQ.OOHTML.META.api.templatedep];
+    let templateEl = el[this.window.WQ.OOHTML.META.api.moduleref];
     let templateExportsObject = templateEl ? templateEl[this.window.WQ.OOHTML.META.api.exports] : null;
     if (!templateEl || !templateExportsObject || !_isTypeObject(items)) {
         return;
@@ -74,8 +74,9 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
             }
         }
         if (itemEl) {
-            if (_isFunction(renderCallback)) {
-                renderCallback(itemEl, 'setState', itemData, key, isUpdate);
+            if (!(_isFunction(renderCallback) && renderCallback('setState', itemEl, itemData, key, isUpdate) === false)) {
+                let setState = this.window.WQ.OOHTML.META.api.setState;
+                itemEl[setState](itemData);
             }
         }
     };
@@ -84,8 +85,9 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
         var itemEl = childSelector(el, '[' + itemIndexAttribute + '="' + key + '"]');
         if (itemEl) {
             var rspns;
-            if (_isFunction(renderCallback)) {
-                rspns = renderCallback(itemEl, 'clearState', oldValue, key);
+            if (!(_isFunction(renderCallback) && renderCallback('clearState', itemEl, oldValue, key) === false)) {
+                let clearState = this.window.WQ.OOHTML.META.api.clearState;
+                itemEl[clearState]();
             }
             var remove = () => itemEl.remove();
             if (rspns instanceof Promise) {
@@ -174,7 +176,7 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
                         resolve();
                     }, true/* withPromise */);
                     // --------
-                    await overflowCallback(_itemDetails.el, 'collapse', _item, _itemDetails.key, collapsed.size);
+                    await overflowCallback('collapse', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
                 } else {
                     normalizationState = null;
                 }
@@ -190,7 +192,7 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
                     var allowance = currentContainerSize - currentElSize;
                     if (allowance >= collapsed.get(_item)/* collapsion_size */ && (_itemDetails = itemDetails(_item))) {
                         collapsed.delete(_item);
-                        await overflowCallback(_itemDetails.el, 'restore', _item, _itemDetails.key, collapsed.size);
+                        await overflowCallback('restore', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
                     } else {
                         normalizationState = null;
                     }
@@ -201,7 +203,7 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
                 normalizationState = null;
             }
             // ---------------
-            // Loop until normalized
+            // Loop until no more normalizing
             if (normalizationState) {
                 await reflow();
             }
@@ -212,8 +214,10 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
             key,
         } : null), null);
         // ---------------
+        var initialCall = true;
         observeResize.call(this, params.parentalOverflowBounds !== false ? el.parentNode : el, rect => {
-            if (normalizationState) { return; }
+            if (!initialCall && normalizationState) { return; }
+            initialCall = false;
             reflow(null, rect);
         });
     }
