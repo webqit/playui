@@ -29,7 +29,8 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
         throw new Error('itemize() requires OOHTML to be on this page.');
     }
     const itemIndexAttribute = params.itemIndexAttribute || 'data-index';
-    if (getPlayUiBase(el).previousBindings && getPlayUiBase(el).previousBindings !== items) {
+    const previousBindings = getPlayUiBase(el).previousBindings;
+    if (previousBindings && previousBindings !== items) {
         childSelectorAll(el, '[' + itemIndexAttribute + ']').forEach(_el => _el.remove());
     }
     let templateEl = el[this.window.WQ.OOHTML.META.api.moduleref];
@@ -101,8 +102,8 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
     var isUpdate = childSelector(el, '[' + itemIndexAttribute + ']') ? true : false;
     _each(items, (item, key) => _set(item, key, isUpdate));
     if (params.setState !== false && this.Observer.observe) {
-        if (getPlayUiBase(el).previousBindings) {
-            this.Observer.unobserve(getPlayUiBase(el).previousBindings, null, null, {tags: ['#playui-itemize', itemize, this]});
+        if (previousBindings) {
+            this.Observer.unobserve(previousBindings, null, null, {tags: ['#playui-itemize', itemize, this]});
         }
         this.Observer.observe(items, changes => {
             changes.forEach(entry => {
@@ -220,6 +221,11 @@ export default function itemize(el, items, renderCallback = null, overflowCallba
             initialCall = false;
             reflow(null, rect);
         });
+        setTimeout(() => {
+            if (previousBindings && !normalizationState) {
+                reflow();
+            }
+        }, 0);
     }
 };
 
@@ -275,6 +281,9 @@ function observeResize(el, callback) {
             });
         });
     }
+    var existing = callbacksList.get(el);
     callbacksList.set(el, callback);
-    sharedResizeObserver.observe(el);
+    if (!existing) {
+        sharedResizeObserver.observe(el);
+    }
 };

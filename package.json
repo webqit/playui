@@ -1,7 +1,7 @@
 {
   "name": "@webqit/play-ui",
   "title": "Play-UI",
-  "description": "WebQit's UI pack.",
+  "description": "Modern UI suite and web component library.",
   "keywords": [
     "plot-js",
     "play-js",
@@ -9,10 +9,14 @@
     "play-css",
     "vivid-css",
     "async-dom",
+    "animations",
+    "events",
+    "gestures",
+    "UI geometry",
     "webcomponents"
   ],
   "homepage": "https://webqit.io/tooling/play-ui",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -36,7 +40,7 @@
     "prepublish": "npm run build"
   },
   "dependencies": {
-    "@webqit/browser-pie": "0.0.5",
+    "@webqit/browser-pie": "0.0.7",
     "@webqit/util": "^0.7.0"
   },
   "devDependencies": {
