@@ -2,13 +2,15 @@
 /**
  * @imports
  */
-import Ani from './Ani.js';
-import Timeline from './Timeline.js';
+import _isFunction from '@webqit/util/js/isFunction.js';
 import _arrFrom from '@webqit/util/arr/from.js';
 import _arrLast from '@webqit/util/arr/last.js';
 import _merge from '@webqit/util/obj/merge.js';
 import _isNumber from '@webqit/util/js/isNumber.js';
 import _isEmpty from '@webqit/util/js/isEmpty.js';
+import Timeline from './Timeline.js';
+import Ani from './Ani.js';
+import Ani2 from './Ani2.js';
 
 /**
  * ---------------------------
@@ -83,7 +85,8 @@ export default class {
         }
         // ---------------------------------
         var createAnimation = (nowPlaying, entry, effect, params) => {
-            var animation = new Ani(entry.el, effect, params);
+            var _ani = _isFunction(effect) ? Ani2 : Ani;
+            var animation = new _ani(entry.el, effect, params);
             nowPlaying.add(animation);
             if (params.oneoff) {
                 animation.onfinish(() => {

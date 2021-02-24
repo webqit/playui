@@ -8,11 +8,12 @@ import _pushUnique from '@webqit/util/arr/pushUnique.js';
 import _isString from '@webqit/util/js/isString.js';
 import _isArray from '@webqit/util/js/isArray.js';
 import _isObject from '@webqit/util/js/isObject.js';
-import _isNumber from '@webqit/util/js/isNumber.js';
 import _isNumeric from '@webqit/util/js/isNumeric.js';
 import _isFunction from '@webqit/util/js/isFunction.js';
 import _isEmpty from '@webqit/util/js/isEmpty.js';
 import _isUndefined from '@webqit/util/js/isUndefined.js';
+// ------------------------------------
+import API from './API.js';
 // ------------------------------------
 import readSync from '@webqit/plot-js/src/css/readSync.js';
 import writeSync from '@webqit/plot-js/src/css/writeSync.js';
@@ -24,11 +25,11 @@ import TransformRule from '@webqit/plot-js/src/css/classes/TransformRule.js';
 
 /**
  * ---------------------------
- * The Element utility class
+ * The Ani class
  * ---------------------------
  */
 			
-export default class Ani {
+export default class Ani extends API {
 	
 	/**
 	 * Creates an amiation from
@@ -41,25 +42,16 @@ export default class Ani {
 	 * @return this
 	 */
 	constructor(el, effect, params = {}) {
-		// Private properties
-		this.el = el;
-		this.$ = {
-			readyCallbacks: [],
-			finishCallbacks: [],
-			cancelCallbacks: [],
-			params: params,
-		};
+		super(el, effect, params);
 		// -----------------------------
-		// Normalize params...
-		// -----------------------------
-		params.fill = params.fill || 'both';
-		if (!('duration' in params)) {
-			params.duration = 400;
+		this.$.params.fill = this.$.params.fill || 'both';
+		if (!('duration' in this.$.params)) {
+			this.$.params.duration = 400;
 		}
 		// Convert certain easing strings to beizier curves
-		if (params.easing && ['ease-in', 'ease-out', 'ease-in-out'].indexOf(params.easing) === -1 && params.easing.indexOf('(') === -1) {
+		if (this.$.params.easing && ['ease-in', 'ease-out', 'ease-in-out'].indexOf(this.$.params.easing) === -1 && this.$.params.easing.indexOf('(') === -1) {
 			// Native easings, custom cubic-beziers, or Dramatic's cubic-beziers
-			params.easing = cssVarRead.call(WQ.DOM, params.easing) || params.easing;
+			this.$.params.easing = cssVarRead.call(WQ.DOM, this.$.params.easing) || this.$.params.easing;
 		}
 		// -----------------------------
 		// Normalize keyframes...
@@ -116,7 +108,7 @@ export default class Ani {
 				return;
 			}
 			// Reverse
-			if (params.reverse) {
+			if (this.$.params.reverse) {
 				anim.reverse();
 			}
 			// A little polifyll
@@ -124,37 +116,29 @@ export default class Ani {
 				anim.effect = {};
 			}
 			if (!anim.effect.duration) {
-				anim.effect.duration = params.duration;
+				anim.effect.duration = this.$.params.duration;
 			}
 			// -----------------------------
 			// "onfinish" and "oncancel" listener
 			// -----------------------------
 			anim.onfinish = () => {
 				// As getter, as it were
-				if (params.cancelForCss) {
+				if (this.$.params.cancelForCss) {
 					anim.cancel();
-					if (params.fill === 'forwards' || params.fill === 'both') {
+					if (this.$.params.fill === 'forwards' || this.$.params.fill === 'both') {
 						writeSync.call(WQ.DOM, this.el, lastFrame);
 					}
 				}
-				this.$.finishCallbacks.forEach(callback => {
-					callback(this.el);
-				});
+				this.$.callFinish();
 			};
 			// oncancel listener
-			anim.oncancel = () => {
-				// As getter, as it were
-				this.$.cancelCallbacks.forEach(callback => {
-					callback(this.el);
-				});
-			};
+			anim.oncancel = () => this.$.callCancel();
 			// -------------------
 			this.$.anim = anim;
 			this.$.firstFrame = firstFrame;
 			this.$.lastFrame = lastFrame;
-			this.$.params = params;
 			if (this.$.readyCallbacks.length) {
-				this.$.readyCallbacks.forEach(callback => callback(anim, params, firstFrame, lastFrame));
+				this.$.readyCallbacks.forEach(callback => callback(anim, this.$.params, firstFrame, lastFrame));
 			}
 			// -------------------
 		};
@@ -167,15 +151,6 @@ export default class Ani {
 				// -------------------
 			});
 		}
-	}
-		
-	/**
-	 * Returns the animation.
-	 *
-	 * @return Animation
-	 */
-	get anim() {
-		return this.$.anim;
 	}
 	
 	/**
@@ -196,124 +171,6 @@ export default class Ani {
 		} else {
 			this.$.readyCallbacks.push(succes);
 		}
-	}
-	
-	/**
-	 * Binds a function to the "onfinish" event.
-	 *
-	 * @param function callback
-	 *
-	 * @return this
-	 *
-	 */
-	onfinish(callback) {
-		if (!_isFunction(callback)) {
-			throw new Error("Onfinish() accepts only a function.");
-		}
-		this.$.finishCallbacks.push(callback);
-		return this;
-	}
-	
-	/**
-	 * Binds a function to the "oncancel" event.
-	 *
-	 * @param function callback
-	 *
-	 * @return this
-	 *
-	 */
-	oncancel(callback) {
-		if (!_isFunction(callback)) {
-			throw new Error("Oncancel() accepts only a function.");
-		}
-		this.$.cancelCallbacks.push(callback);
-		return this;
-	}
-	
-	/**
-	 * Returns the animation's progress.
-	 *
-	 * @return number
-	 */
-	progress() {
-		if (this.$.anim) {
-			return this.$.anim.currentTime / this.$.anim.effect.duration;
-		}
-		return 0;
-	}
-	
-	/**
-	 * Seeks the animation to a time.
-	 *
-	 * @param number to
-	 *
-	 * @return this
-	 */
-	seek(to) {
-		if (!_isNumber(to)) {
-			throw new Error("Seek() accepts only a numeric value.");
-		}
-		this.ready((anim, params) => {
-			var totalDuration = params.duration + (params.delay || 0) + (params.endDelay || 0);
-			anim.currentTime = Math.max(0, Math.min(to * totalDuration, totalDuration));
-		});
-		return this;
-	}
-
-	/**
-	 * Reverses the animation.
-	 *
-	 * @return this
-	 */
-	reverse() {
-		this.ready(anim => anim.reverse());
-		return this;
-	}
-	
-	/**
-	 * Plays the animation.
-	 * Returns an "onfinish" promise.
-	 *
-	 * @return Promise
-	 */
-	play() {
-		return new Promise((resolve, reject) => {
-			this.ready(anim => {
-				anim.play();
-				this.onfinish(() => resolve(this));
-				this.oncancel(() => reject(this));
-			}, reject);
-		});
-	}
-	
-	/**
-	 * Pauses the animation.
-	 *
-	 * @return this
-	 */
-	pause() {
-		this.ready(anim => anim.pause());
-		return this;
-	}
-	
-	/**
-	 * Finishes the animation.
-	 *
-	 * @return this
-	 */
-	finish() {
-		this.ready(anim => anim.finish());
-		return this;
-	}
-	
-	/**
-	 * Cancels the animation.
-	 *
-	 * @return this
-	 */
-	cancel() {
-		this.ready(anim => anim.cancel());
-		return this;
 	}
 	
 	/**

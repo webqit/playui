@@ -23,67 +23,62 @@ export default function(window) {
          * @return void
          */
         connectedCallback() {
-            var scale = parseInt(this.getAttribute('play-seq-scale') || '1');
-            var scale2 = 1 + (1 - scale);
-            var cancelForCss = this.hasAttribute('play-seq-cancelforcss');
-            var displacement = this.getAttribute('play-seq-displacement') || '0';
-            var orientation = this.getAttribute('play-seq-orientation') || 'v';
-            var duration = this.getAttribute('play-seq-duration') || 200;
-            var lag = this.getAttribute('play-seq-lag') || 100;
-            var alpha = this.getAttribute('play-seq-alpha') || 0;
-            var orientationStartsA = {
-                v: ['0', displacement],
-                h: ['-' + displacement, '0'],
-            };
-            var orientationStartsB = {
-                v: ['0', '-' + displacement],
-                h: [displacement, '0'],
-            };
-            var sequenceA = new Sequence;
-            var sequenceB = new Sequence;
-            var params = {lag, oneoff: true, duration, cancelForCss};
+            var params = (this.getAttribute('play-seq') || '').split(';').reduce((p, prop) => {
+                var [ name, value ] = prop.split(':').map(s => s.trim());
+                p[name] = ['duration', 'lag'].includes(name) ? parseInt(value) : value;
+                return p;
+            }, {
+                lag: 100,
+                rootMargin: '50px',
+                orientation: 'v',
+                duration: 2000,
+                class: 'play-seq-active',
+                classAlt: 'play-seq-active-alt',
+            });
             // ----------------
-            sequenceA.play([{
-                opacity: alpha,
-                transform: {
-                    scale: scale + '',
-                    translate: orientationStartsA[orientation],
-                }
-            }, {
-                opacity: 1,
-                transform: {
-                    scale: '1',
-                    translate: ['0', '0'],
-                }
-            }], params);
+            if (params.class) {
+                var sequenceA = new Sequence;
+                sequenceA.play((el, state, reversed, currentTime) => {
+                    if (state === 'pause') {
+                        return false;
+                    }
+                    var className = params.class + (reversed ? ' animation-reversed' : '');
+                    if (state === 'begin') {
+                        el.classList.add(className);
+                    } else if (state === 'end') {
+                        el.classList.remove(className);
+                    }
+                }, params);
+            }
             // -----------------
-            sequenceB.play([{
-                opacity: alpha,
-                transform: {
-                    scale: scale2 + '',
-                    translate: orientationStartsB[orientation],
-                }
-            }, {
-                opacity: 1,
-                transform: {
-                    scale: '1',
-                    translate: ['0', '0'],
-                }
-            }], params);
+            if (params.classAlt) {
+                var sequenceB = new Sequence;
+                sequenceB.play((el, state, reversed, currentTime) => {
+                    if (state === 'pause') {
+                        return false;
+                    }
+                    var className = params.classAlt + (reversed ? ' animation-reversed' : '');
+                    if (state === 'begin') {
+                        el.classList.add(className);
+                    } else if (state === 'end') {
+                        el.classList.remove(className);
+                    }
+                }, params);
+            }
             // --------------
             this.intersectionObserver = new window.IntersectionObserver(entries => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        if (entry.boundingClientRect.top < 0) {
+                        if (params.classAlt && entry.boundingClientRect.top < 0) {
                             // Top-to-bottom motion
                             sequenceB.add(entry.target);
-                        } else {
+                        } else if (params.class) {
                             // Bottom-to-top motion
                             sequenceA.add(entry.target);
                         }
                     }
                 });
-            }, {rootMargin: '50px'});
+            }, {rootMargin: params.rootMargin});
         }
 
         /**

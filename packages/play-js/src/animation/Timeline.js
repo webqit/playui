@@ -6,7 +6,7 @@ import _isArray from '@webqit/util/js/isArray.js';
 import _isFunction from '@webqit/util/js/isFunction.js';
 import _arrFrom from '@webqit/util/arr/from.js';
 import _remove from '@webqit/util/arr/remove.js';
-import Ani from './Ani.js';
+import API from './API.js';
 
 /**
  * -----------------------------
@@ -41,13 +41,13 @@ export default class {
 	/**
 	 * Adds an animation instance.
 	 *
-	 * @param Ani			 anim
+	 * @param API			 anim
 	 *
 	 * @return this
 	 */
 	add(anim) {
-		if (!(anim instanceof Ani)) {
-			throw new Error('Argument#1 must be an Ani instance!');
+		if (!(anim instanceof API)) {
+			throw new Error('Argument#1 must be an animation API instance!');
 		}
 		this.$.animations.push(anim);
 		
@@ -74,13 +74,13 @@ export default class {
 	/**
 	 * Removes an animation instance.
 	 *
-	 * @param Ani			 anim
+	 * @param API			 anim
 	 *
 	 * @return this
 	 */
 	remove(anim) {
-		if (!(anim instanceof Ani)) {
-			throw new Error('Argument#1 must be an Ani instance!');
+		if (!(anim instanceof API)) {
+			throw new Error('Argument#1 must be an animation API instance!');
 		}
 		_remove(this.$.animations, anim);
 		if (this.$.removeCallback) {
