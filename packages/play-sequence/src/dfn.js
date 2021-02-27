@@ -34,7 +34,7 @@ export default function(window) {
                 duration: 200,
                 class: '',
                 classAlt: '',
-                oneoff: true,
+                oneoff: false,
             });
             // ----------------
             if (params.class) {
