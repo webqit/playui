@@ -23,7 +23,8 @@ export default class Ani2 extends API {
 	 * @return this
 	 */
 	constructor(el, callback, params = {}) {
-		super(el, callback, params);		
+		super(el, callback, params);
+		var sym = Symbol.for('play-js-ani2');
 		// -----------------------------
 		// The state...
 		// -----------------------------
@@ -48,6 +49,11 @@ export default class Ani2 extends API {
 					this.endDelay = Math.max(0, Math.min(endDelay, this.currentTime >= totalTiming ? 0 : totalTiming - this.currentTime));
 				},
 				start(callback) {
+					if (_this.$.anim.el[sym]) {
+						_this.$.anim.el[sym].finish();
+					}
+					_this.$.anim.el[sym] = _this.$.anim;
+					// ---------------
 					this.state = 'playing';
 					this.calculate();
 					this.interval = setInterval(() => {
