@@ -36,6 +36,7 @@ export default function(window) {
                 classAlt: '',
                 oneoff: false,
             });
+            var classOff = params.classOff ? params.classOff.split(' ').map(c => c.trim()) : null;
             // ----------------
             if (params.class) {
                 var sequenceA = new Sequence;
@@ -46,6 +47,9 @@ export default function(window) {
                     var className = (params.class + (reversed ? ' animation-reversed' : '')).split(' ').map(c => c.trim());
                     if (state === 'begin') {
                         el.classList.add(...className);
+                        if (classOff) {
+                            el.classList.remove(...classOff);
+                        }
                     } else if (state === 'end') {
                         el.classList.remove(...className);
                     }
@@ -61,6 +65,9 @@ export default function(window) {
                     var className = (params.classAlt + (reversed ? ' animation-reversed' : '')).split(' ').map(c => c.trim());
                     if (state === 'begin') {
                         el.classList.add(...className);
+                        if (classOff) {
+                            el.classList.remove(...classOff);
+                        }
                     } else if (state === 'end') {
                         el.classList.remove(...className);
                     }
@@ -70,12 +77,19 @@ export default function(window) {
             this.intersectionObserver = new window.IntersectionObserver(entries => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        if (params.classAlt && entry.boundingClientRect.top < 0) {
-                            // Top-to-bottom motion
-                            sequenceB.add(entry.target);
+                        if (entry.boundingClientRect.top < 0) {
+                            if (params.classAlt) {
+                                // Top-to-bottom motion
+                                sequenceB.add(entry.target);
+                            }
                         } else if (params.class) {
                             // Bottom-to-top motion
                             sequenceA.add(entry.target);
+                        }
+                    } else {
+                        if (classOff) {
+                            // Off viewport
+                            entry.target.classList.add(...classOff);
                         }
                     }
                 });
