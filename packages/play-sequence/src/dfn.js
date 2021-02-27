@@ -25,15 +25,16 @@ export default function(window) {
         connectedCallback() {
             var params = (this.getAttribute('play-seq') || '').split(';').reduce((p, prop) => {
                 var [ name, value ] = prop.split(':').map(s => s.trim());
-                p[name] = ['duration', 'lag'].includes(name) ? parseInt(value) : value;
+                p[name] = ['duration', 'lag', 'oneoff'].includes(name) ? parseInt(value) : value;
                 return p;
             }, {
                 lag: 100,
                 rootMargin: '50px',
                 orientation: 'v',
-                duration: 2000,
-                class: 'play-seq-active',
-                classAlt: 'play-seq-active-alt',
+                duration: 200,
+                class: '',
+                classAlt: '',
+                oneoff: true,
             });
             // ----------------
             if (params.class) {
@@ -42,11 +43,11 @@ export default function(window) {
                     if (state === 'pause') {
                         return false;
                     }
-                    var className = params.class + (reversed ? ' animation-reversed' : '');
+                    var className = (params.class + (reversed ? ' animation-reversed' : '')).split(' ').map(c => c.trim());
                     if (state === 'begin') {
-                        el.classList.add(className);
+                        el.classList.add(...className);
                     } else if (state === 'end') {
-                        el.classList.remove(className);
+                        el.classList.remove(...className);
                     }
                 }, params);
             }
@@ -57,11 +58,11 @@ export default function(window) {
                     if (state === 'pause') {
                         return false;
                     }
-                    var className = params.classAlt + (reversed ? ' animation-reversed' : '');
+                    var className = (params.classAlt + (reversed ? ' animation-reversed' : '')).split(' ').map(c => c.trim());
                     if (state === 'begin') {
-                        el.classList.add(className);
+                        el.classList.add(...className);
                     } else if (state === 'end') {
-                        el.classList.remove(className);
+                        el.classList.remove(...className);
                     }
                 }, params);
             }

@@ -50,49 +50,34 @@ export default class Ani2 extends API {
 				start(callback) {
 					this.state = 'playing';
 					this.calculate();
-					this.interval = setInterval(() => { this.currentTime ++; }, 1);
-					const _start = () => {
-						this.durationTimeout = setTimeout(() => {
-							// ------------
+					this.interval = setInterval(() => {
+						if (this.currentTime === this.delay) {
+							callback(0);
+						}
+						if (this.currentTime === this.delay + this.duration) {
 							callback(1);
-							// ------------
-							const _finish = () => {
-								this.state = 'finished';
-								this.stop();
-								callback(2);
-							};
-							if (this.endDelay) {
-								this.endDelayTimeout = setTimeout(() => {
-									_finish();
-								}, this.endDelay);
-							} else {
-								_finish();
-							}
-						}, this.duration);
-						// ------------
-						callback(0);
-						// ------------
-					};
-					if (this.delay) {
-						this.delayTimeout = setTimeout(() => _start(), this.delay);
-					} else {
-						_start();
-					}
+						}
+						if (this.currentTime === this.delay + this.duration + this.endDelay) {
+							this.state = 'finished';
+							this.stop();
+							callback(2);
+							this.currentTime = 0;
+						} else {
+							this.currentTime ++;
+						}
+					}, 1);
 				},
 				stop() {
 					// Interval is cleared at the entire end
 					// duration: delay + duration + endDelay
 					clearInterval(this.interval);
-					clearTimeout(this.delayTimeout);
-					clearTimeout(this.durationTimeout);
-					clearTimeout(this.endDelayTimeout);
 				},
 			},
 
 			set currentTime(currentTime) {
 				this.timing.currentTime = currentTime;
 				if (this.timing.state === 'playing') {
-					this.timing.cancel();
+					this.timing.stop();
 					this.play();
 				}
 			},
