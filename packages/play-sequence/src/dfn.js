@@ -3,6 +3,7 @@
  * @imports
  */
 import Sequence from '@webqit/play-js/src/animation/Sequence.js';
+import play from '@webqit/play-js/src/animation/play.js';
 
 
 /**
@@ -23,87 +24,18 @@ export default function(window) {
          * @return void
          */
         connectedCallback() {
-            var params = (this.getAttribute('play-seq') || '').split(';').reduce((p, prop) => {
-                var [ name, value ] = prop.split(':').map(s => s.trim());
-                p[name] = ['duration', 'lag', 'oneoff'].includes(name) ? parseInt(value) : value;
-                return p;
-            }, {
-                lag: 100,
-                rootMargin: '50px',
-                duration: 200,
-                classIn: '',
-                classInAlt: '',
-                classOut: '',
-                oneoff: false,
-            });
-            var classIn = params.classIn ? params.classIn.split(' ').map(c => c.trim()) : null;
-            var classInAlt = params.classInAlt ? params.classInAlt.split(' ').map(c => c.trim()) : null;
-            var classOut = params.classOut ? params.classOut.split(' ').map(c => c.trim()) : null;
+            this._params = getAnimParams(this);
             // ----------------
-            if (classIn) {
-                var sequenceA = new Sequence;
-                sequenceA.play((el, state, reversed, currentTime) => {
-                    if (state === 'pause') {
-                        return false;
-                    }
-                    if (state === 'begin') {
-                        if (!params.duration && classInAlt) {
-                            el.classList.remove(...classInAlt);
-                        }
-                        el.classList.add(...classIn);
-                        if (classOut) {
-                            el.classList.remove(...classOut);
-                        }
-                    } else if (state === 'end') {
-                        if (params.duration) {
-                            el.classList.remove(...classIn);
-                        }
-                    }
-                }, params);
+            if (this._params.animIn) {
+                this._sequenceA = new Sequence;
+                this._sequenceA.play(this._params.animIn, this._params);
             }
             // -----------------
-            if (classInAlt) {
-                var sequenceB = new Sequence;
-                sequenceB.play((el, state, reversed, currentTime) => {
-                    if (state === 'pause') {
-                        return false;
-                    }
-                    if (state === 'begin') {
-                        if (!params.duration && classIn) {
-                            el.classList.remove(...classIn);
-                        }
-                        el.classList.add(...classInAlt);
-                        if (classOut) {
-                            el.classList.remove(...classOut);
-                        }
-                    } else if (state === 'end') {
-                        if (params.duration) {
-                            el.classList.remove(...classInAlt);
-                        }
-                    }
-                }, params);
+            if (this._params.animInAlt) {
+                this._sequenceB = new Sequence;
+                this._sequenceB.play(this._params.animInAlt, this._params);
             }
             // --------------
-            this.intersectionObserver = new window.IntersectionObserver(entries => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        if (entry.boundingClientRect.top < 0) {
-                            if (classInAlt) {
-                                // Top-to-bottom motion
-                                sequenceB.add(entry.target);
-                            }
-                        } else if (classIn) {
-                            // Bottom-to-top motion
-                            sequenceA.add(entry.target);
-                        }
-                    } else {
-                        if (classOut && !(classIn || []).concat(classInAlt || []).filter(c => entry.target.classList.contains(c)).length) {
-                            // Off viewport
-                            entry.target.classList.add(...classOut);
-                        }
-                    }
-                });
-            }, {rootMargin: params.rootMargin});
         }
 
         /**
@@ -114,7 +46,19 @@ export default function(window) {
          * @return void
          */
         sequenceAdd(el) {
-            this.intersectionObserver.observe(el);
+            Observe(el, this._params.rootMargin, entry => {
+                if (entry.isIntersecting) {
+                    if (entry.boundingClientRect.top < 0) {
+                        if (this._params.animInAlt) {
+                            // Top-to-bottom motion
+                            this._sequenceB.add(entry.target);
+                        }
+                    } else if (this._params.animIn) {
+                        // Bottom-to-top motion
+                        this._sequenceA.add(entry.target);
+                    }
+                }
+            });
         }
 
     };
@@ -149,39 +93,25 @@ export default function(window) {
          * @return void
          */
         connectedCallback() {
-            var params = (this.getAttribute('play-seq') || '').split(';').reduce((p, prop) => {
-                var [ name, value ] = prop.split(':').map(s => s.trim());
-                p[name] = value;
-                return p;
-            }, {
-                rootMargin: '50px',
-                classIn: '',
-                classInAlt: '',
-                classOut: '',
-            });
-            var classIn = params.classIn ? params.classIn.split(' ').map(c => c.trim()) : null;
-            var classInAlt = params.classInAlt ? params.classInAlt.split(' ').map(c => c.trim()) : null;
-            var classOut = params.classOut ? params.classOut.split(' ').map(c => c.trim()) : null;
+            var params = getAnimParams(this);
             // --------------
+            var animatingA, animatingB;
             Observe(this, params.rootMargin, entry => {
                 if (entry.isIntersecting) {
                     if (entry.boundingClientRect.top < 0) {
-                        if (classInAlt) {
+                        if (params.animInAlt && !animatingB) {
+                            animatingB = true;
                             // Top-to-bottom motion
-                            entry.target.classList.remove(...classIn);
-                            entry.target.classList.add(...classInAlt);
-                            entry.target.classList.remove(...classOut);
+                            play(entry.target, params.animInAlt, params).then(() => {
+                                animatingB = false;
+                            });
                         }
-                    } else if (classIn) {
+                    } else if (params.animIn && !animatingA) {
+                        animatingA = true;
                         // Bottom-to-top motion
-                        entry.target.classList.remove(...classInAlt);
-                        entry.target.classList.add(...classIn);
-                        entry.target.classList.remove(...classOut);
-                    }
-                } else {
-                    if (classOut && !(classIn || []).concat(classInAlt || []).filter(c => entry.target.classList.contains(c)).length) {
-                        // Off viewport
-                        entry.target.classList.add(...classOut);
+                        play(entry.target, params.animIn, params).then(() => {
+                            animatingA = false;
+                        });
                     }
                 }
             });
@@ -212,4 +142,21 @@ const Observe = (el, rootMargin, callback) => {
     var obs = Observers.get(rootMargin);
     obs.c.set(el, callback);
     obs.o.observe(el);
+};
+
+const getAnimParams = el => {
+    return (el.getAttribute('play-seq') || '').split(';').reduce((p, prop) => {
+        var [ name, value ] = prop.split(':').map(s => s.trim());
+        p[name] = ['duration', 'lag', 'oneoff'].includes(name) ? parseInt(value) : value;
+        return p;
+    }, {
+        lag: 100,
+        rootMargin: '0px',
+        duration: 200,
+        animIn: '',
+        animInAlt: '',
+        oneoff: true,
+        fill: 'forwards',
+        easing: 'ease-out',
+    });
 };

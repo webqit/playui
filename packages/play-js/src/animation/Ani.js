@@ -28,7 +28,8 @@ import TransformRule from '@webqit/plot-js/src/css/classes/TransformRule.js';
  * The Ani class
  * ---------------------------
  */
-			
+
+const cssAnimNameCache = {};
 export default class Ani extends API {
 	
 	/**
@@ -149,7 +150,7 @@ export default class Ani extends API {
 				// -------------------
 				this.$.error = error;
 				// -------------------
-			});
+			}, this.$.params.animNameNoCache);
 		}
 	}
 	
@@ -183,10 +184,11 @@ export default class Ani extends API {
 	 * @param array|object|string	effect
 	 * @param function				ready
 	 * @param function				error
+	 * @param bool					error
 	 *
 	 * @return void
 	 */
-	static createCallback(el, effect, ready, error) {
+	static createCallback(el, effect, ready, error, animNameNoCache) {
 		// -----------------------------
 		// Resolve firstFrame from current state?
 		// -----------------------------
@@ -197,9 +199,9 @@ export default class Ani extends API {
 			WQ.DOM.Reflow.onread(() => {
 				if (isArrayButEmptyFirstKeyframe) {
 					effect.shift();
-					Ani.createCallback(el, [readSync.call(WQ.DOM, el, Object.keys(effect[0])), ...effect], ready, error);
+					Ani.createCallback(el, [readSync.call(WQ.DOM, el, Object.keys(effect[0])), ...effect], ready, error, animNameNoCache);
 				} else {
-					Ani.createCallback(el, [readSync.call(WQ.DOM, el, Object.keys(effect)), effect], ready, error);
+					Ani.createCallback(el, [readSync.call(WQ.DOM, el, Object.keys(effect)), effect], ready, error, animNameNoCache);
 				}
 			});
 			return;
@@ -209,11 +211,13 @@ export default class Ani extends API {
 		// -----------------------------
 		if (_isString(effect)) {
 			// Retrieve keyframes of the given animation name from css
-			var animationName = effect;
-			effect = readSyncKeyframes.call(WQ.DOM, animationName);
-			if (!effect.length && error) {
-				error('Animation name "' + animationName + '" not found in any stylesheet!');
+			if (!cssAnimNameCache[effect] || !cssAnimNameCache[effect].length || animNameNoCache) {
+				cssAnimNameCache[effect] = readSyncKeyframes.call(WQ.DOM, effect);
+				if (!cssAnimNameCache[effect].length && error) {
+					error('Animation name "' + effect + '" not found in any stylesheet!');
+				}
 			}
+			effect = cssAnimNameCache[effect];
 		}
 		// -----------------------------
 		// Resolve auto pixels...

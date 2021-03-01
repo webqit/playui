@@ -56,7 +56,11 @@ export default class Ani2 extends API {
 					// ---------------
 					this.state = 'playing';
 					this.calculate();
+					if (!this.delay) {
+						callback(0);
+					}
 					this.interval = setInterval(() => {
+						this.currentTime ++;
 						if (this.currentTime === this.delay) {
 							callback(0);
 						}
@@ -68,8 +72,6 @@ export default class Ani2 extends API {
 							this.stop();
 							callback(2);
 							this.currentTime = 0;
-						} else {
-							this.currentTime ++;
 						}
 					}, 1);
 				},

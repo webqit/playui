@@ -148,11 +148,11 @@ export default class {
 					res();
 				}
 			};
-			var handleCancel = () => {
+			var handleCancel = e => {
 				if (!alreadyRejected) {
 					alreadyRejected = true;
 					this.$.cancelCallbacks.forEach(callback => callback());
-					rej();
+					rej(e);
 				}
 			};
 			// ---------------------------------
