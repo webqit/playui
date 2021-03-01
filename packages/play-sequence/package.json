@@ -8,7 +8,7 @@
     "observer"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/play-sequence",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@webqit/play-js": "^0.1.5",
+    "@webqit/play-js": "^0.1.6",
     "@webqit/util": "^0.7.0"
   },
   "devDependencies": {

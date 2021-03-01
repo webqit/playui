@@ -94,23 +94,42 @@ export default function(window) {
          */
         connectedCallback() {
             var params = getAnimParams(this);
+            var _params = {...params};
+            _params.reverse = !_params.reverse;
+            _params.fill = _params.fill === 'forwards' ? 'backwards' : 'forwards';
             // --------------
-            var animatingA, animatingB;
+            var animatingA, animatingB, animating_A, animating_B;
             Observe(this, params.rootMargin, entry => {
                 if (entry.isIntersecting) {
                     if (entry.boundingClientRect.top < 0) {
                         if (params.animInAlt && !animatingB) {
                             animatingB = true;
                             // Top-to-bottom motion
-                            play(entry.target, params.animInAlt, params).then(() => {
+                            play(entry.target, params.animInAlt, {...params}).then(() => {
                                 animatingB = false;
                             });
                         }
                     } else if (params.animIn && !animatingA) {
                         animatingA = true;
                         // Bottom-to-top motion
-                        play(entry.target, params.animIn, params).then(() => {
+                        play(entry.target, params.animIn, {...params}).then(() => {
                             animatingA = false;
+                        });
+                    }
+                } else if (params.autoOffStateReverse) {
+                    if (entry.boundingClientRect.top < 0) {
+                        if (_params.animInAlt && !animatingB && !animating_B) {
+                            animating_B = true;
+                            // Top-to-bottom motion
+                            play(entry.target, _params.animInAlt, {..._params}).then(() => {
+                                animating_B = false;
+                            });
+                        }
+                    } else if (_params.animIn && !animatingA && !animating_A) {
+                        animating_A = true;
+                        // Bottom-to-top motion
+                        play(entry.target, _params.animIn, {..._params}).then(() => {
+                            animating_A = false;
                         });
                     }
                 }
@@ -145,9 +164,9 @@ const Observe = (el, rootMargin, callback) => {
 };
 
 const getAnimParams = el => {
-    return (el.getAttribute('play-seq') || '').split(';').reduce((p, prop) => {
+    return (el.getAttribute('play-seq') || '').split(';').map(c => c.trim()).filter(c => c).reduce((p, prop) => {
         var [ name, value ] = prop.split(':').map(s => s.trim());
-        p[name] = ['duration', 'lag', 'oneoff'].includes(name) ? parseInt(value) : value;
+        p[name] = ['duration', 'lag', 'always', 'autoOffStateReverse'].includes(name) ? parseInt(value) : value;
         return p;
     }, {
         lag: 100,
@@ -155,8 +174,10 @@ const getAnimParams = el => {
         duration: 200,
         animIn: '',
         animInAlt: '',
-        oneoff: true,
+        always: true,
         fill: 'forwards',
         easing: 'ease-out',
+        cancelForCss: false,
+        autoOffStateReverse: false,
     });
 };

@@ -17,9 +17,6 @@ import Ani2 from './Ani2.js';
  * @return Promise
  */
 export default function play(el, effect, params = {}) {
-	if (!('cancelForCss' in params)) {
-		params.cancelForCss = true;
-	}
 	var _ani = _isFunction(effect) ? Ani2 : Ani;
 	return (new _ani(el, effect, params)).play().then(() => el);
 };

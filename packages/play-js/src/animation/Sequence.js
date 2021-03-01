@@ -88,7 +88,7 @@ export default class {
             var _ani = _isFunction(effect) ? Ani2 : Ani;
             var animation = new _ani(entry.el, effect, params);
             nowPlaying.add(animation);
-            if (params.oneoff) {
+            if (params.always) {
                 animation.onfinish(() => {
                     nowPlaying.remove(animation);
                     this.remove(entry.el);

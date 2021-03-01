@@ -184,7 +184,7 @@ export default class Ani extends API {
 	 * @param array|object|string	effect
 	 * @param function				ready
 	 * @param function				error
-	 * @param bool					error
+	 * @param bool					animNameNoCache
 	 *
 	 * @return void
 	 */
