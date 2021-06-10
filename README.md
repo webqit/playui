@@ -1,4 +1,4 @@
-# Observables
+# Play UI
 
 <!-- BADGES/ -->
 
@@ -12,12 +12,7 @@ A modern UI library covering layout, design, and UI physics (animations, events 
 > [Visit project homepage](https://webqit.io/tooling/play-ui).
 
 ## Documentation
-Visit individual components for documentation:
-+ [Plot JS](https://webqit.io/tooling/play-ui/plot-js)
-+ [Play JS](https://webqit.io/tooling/play-ui/play-js)
-+ [Plot CSS](https://webqit.io/tooling/play-ui/plot-css)
-+ [Play CSS](https://webqit.io/tooling/play-ui/play-css)
-+ [Vivid CSS](https://webqit.io/tooling/play-ui/vivid-css)
++ [Play UI](https://webqit.io/tooling/play-ui)
 
 ## Issues
 To report bugs or request features, please submit an [issue](https://github.com/webqit/play-ui/issues).
