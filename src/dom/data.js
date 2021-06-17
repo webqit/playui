@@ -8,7 +8,7 @@ import _isObject from '@webqit/util/js/isObject.js';
 import _isUndefined from '@webqit/util/js/isUndefined.js';
 import _objFrom from '@webqit/util/obj/from.js';
 import _each from '@webqit/util/obj/each.js';
-import { getEls } from '../util.js';
+import { getPlayUIStub, getEls } from '../util.js';
 
 /**
  * Gets or sets custom data.
@@ -21,18 +21,18 @@ import { getEls } from '../util.js';
  */
 export default function(els, requestOrPayload, val = null) {
 	const _els = getEls.call(this, els);
-	if (!_els[0]['.firedom'].data) {
-		Object.defineProperty(_els[0], '.firedom', {value: {data: {},},});
-	}
 	if (arguments.length === 2) {
-		var customDataset = _els[0]['.firedom'].data;
+		const playUiStub = getPlayUIStub(_els[0]);
+		if (!playUiStub.data) {
+			playUiStub.data = {};
+		}
 		if (_isString(requestOrPayload)) {
-			return customDataset[requestOrPayload];
+			return playUiStub.data[requestOrPayload];
 		}
 		if (_isArray(requestOrPayload)) {
 			var vals = {};
 			requestOrPayload.forEach(key => {
-				vals[key] = customDataset[key];
+				vals[key] = playUiStub.data[key];
 			});
 			return vals;
 		}
@@ -42,12 +42,15 @@ export default function(els, requestOrPayload, val = null) {
 		payload = _objFrom(requestOrPayload, val);
 	}
 	_els.forEach(el => {
-		var customDataset = el['.firedom'].data;
+		const playUiStub = getPlayUIStub(el);
+		if (!playUiStub.data) {
+			playUiStub.data = {};
+		}
 		_each(payload, (key, val) => {
 			if (_isUndefined(val)) {
-				delete customDataset[key];
+				delete playUiStub.data[key];
 			} else {
-				customDataset[key] = val;
+				playUiStub.data[key] = val;
 			}
 		});
 	});

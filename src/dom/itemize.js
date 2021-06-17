@@ -11,7 +11,7 @@ import _following from '@webqit/util/arr/following.js';
 import _arrFrom from '@webqit/util/arr/from.js';
 import _arrMid from '@webqit/util/arr/mid.js';
 import _each from '@webqit/util/obj/each.js';
-import { getPlayUIGlobal, getEls } from '../util.js';
+import { getPlayUIGlobal, getPlayUIStub, getEls } from '../util.js';
 
 /**
  * Binds a (reactive) list context to the instance.
@@ -28,7 +28,7 @@ import { getPlayUIGlobal, getEls } from '../util.js';
 export default function itemize(els, items, renderCallback = null, overflowCallback = null, params = {}) {
     const window = getPlayUIGlobal.call(this, 'window');
     const Observer = getPlayUIGlobal.call(this, 'Observer');
-    const Reflow = getPlayUIGlobal.call(this, 'Reflow');
+    const Reflow = getPlayUIGlobal.call(this, 'reflow');
     const OOHTML = getPlayUIGlobal.call(this, 'OOHTML');
     const itemIndexAttribute = params.itemIndexAttribute || 'data-index';
     // -----------------
@@ -69,7 +69,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
         }
         if (itemEl) {
             if (!(_isFunction(renderCallback) && renderCallback('setState', itemEl, itemData, key, isUpdate) === false)) {
-                let setState = OOHTML.META.api.setState;
+                let setState = OOHTML.meta.get('api.setState');
                 itemEl[setState](itemData);
             }
         }
@@ -80,7 +80,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
         if (itemEl) {
             var rspns;
             if (!(_isFunction(renderCallback) && renderCallback('clearState', itemEl, oldValue, key) === false)) {
-                let clearState = OOHTML.META.api.clearState;
+                let clearState = OOHTML.meta.get('api.clearState');
                 itemEl[clearState]();
             }
             var remove = () => itemEl.remove();
@@ -93,12 +93,12 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
     };
     const context = this;
     getEls.call(this, els).forEach(el => {
-        const previousBindings = getPlayUiBase(el).previousBindings;
+        const previousBindings = getPlayUIStub(el).boundItems;
         if (previousBindings && previousBindings !== items) {
             childSelectorAll(el, '[' + itemIndexAttribute + ']').forEach(_el => _el.remove());
         }
-        let templateEl = el[OOHTML.META.api.moduleref];
-        let templateExportsObject = templateEl ? templateEl[OOHTML.META.api.exports] : null;
+        let templateEl = el[OOHTML.meta.get('api.moduleref')];
+        let templateExportsObject = templateEl ? templateEl[OOHTML.meta.get('api.exports')] : null;
         if (!templateEl || !templateExportsObject || !_isTypeObject(items)) {
             return;
         }
@@ -121,7 +121,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
                     }
                 });
             }, {tags: ['#playui-itemize', itemize, this]});
-            getPlayUiBase(el).previousBindings = items;
+            getPlayUIStub(el).boundItems = items;
         }
         // -----------------
         if (overflowCallback) {
@@ -233,23 +233,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
         }
     });
     return this;
-};
-
-/**
- * Helper
- * 
- * @param Element   el 
- * 
- * @return object
- */
-export const getPlayUiBase = el => {
-    var playUIBase, playUIBaseKeySymbol = Symbol.for('.play-ui');
-    if (!(playUIBase = el[playUIBaseKeySymbol])) {
-        playUIBase = {};
-        Object.defineProperty(el, playUIBaseKeySymbol, {value: playUIBase, enumerable: false});
-    }
-    return playUIBase;
-};
+}
 
 /**
  * Helper
@@ -261,10 +245,10 @@ export const getPlayUiBase = el => {
  */
 export const childSelector = (el, selector) => {
     return _arrFrom(el.children).reduce((match, child) => match || (child.matches(selector) ? child : null), null);
-};
+}
 export const childSelectorAll = (el, selector) => {
     return _arrFrom(el.children).filter(child => child.matches(selector));
-};
+}
 
 /**
  * @observeResize

@@ -4,11 +4,7 @@
  */
 import _each from '@webqit/util/obj/each.js';
 import _beforeLast from '@webqit/util/str/beforeLast.js';
-import _isString from '@webqit/util/js/isString.js';
-import _isObject from '@webqit/util/js/isObject.js';
-import _isArray from '@webqit/util/js/isArray.js';
-import _arrFrom from '@webqit/util/arr/from.js';
-import DOMInit from '@webqit/browser-pie/src/dom/index.js';
+import domInit, { query } from '@webqit/browser-pie/src/dom/index.js';
 
 /**
  * Returns an array of Element object(s).
@@ -18,19 +14,7 @@ import DOMInit from '@webqit/browser-pie/src/dom/index.js';
  * @return Array
  */
 export function getEls(els) {
-    const window = getPlayUIGlobal.call(this, 'window');
-    var _els = els;
-    if (_isString(els)) {
-        _els = els.trim().startsWith('<') 
-            ? [getPlayUIGlobal.call(this).el(els)] 
-            : _arrFrom(window.document.querySelectorAll(els));
-    } else {
-        _els = _arrFrom(els, false);
-    }
-    if (!_els.length) {
-        _els = [window.document.createElement('div')];
-    }
-    return _els;
+    return query.call(this, els);
 }
 
 /**
@@ -41,23 +25,36 @@ export function getEls(els) {
  * @return Array
  */
 export function getPlayUIGlobal(objectName) {
-    var _window, thisContext = _isObject(this) ? this : {};
-    if (thisContext.window) {
-        _window = thisContext.window;
-    } else if (typeof window !== 'undefined') {
-        _window = window;
-    }
-    const DOM = DOMInit(_window);
+    const WebQit = domInit.call(this);
     if (!objectName) {
-        return DOM;
+        return WebQit;
     }
-    if (DOM[objectName]) {
-        return DOM[objectName];
+    if (WebQit[objectName]) {
+        return WebQit[objectName];
     }
-    if (_window.WQ && _window.WQ[objectName]) {
-        return _window.WQ[objectName];
+    if (WebQit.DOM && WebQit.DOM[objectName]) {
+        return WebQit.DOM[objectName];
     }
     throw new Error(`Play UI: ${objectName} not found in scope.`);
+}
+
+/**
+ * Returns a PlayUI-specific object embedded on an element.
+ *
+ * @param Element element
+ * 
+ * @return Object
+ */
+export function getPlayUIStub(element) {
+    var webqitStub, playUiStub, webqitStubSymbol = Symbol.for('.webqit');
+    if (!(webqitStub = element[webqitStubSymbol])) {
+        Object.defineProperty(element, webqitStubSymbol, {value: {}, enumerable: false});
+    }
+    if (!(playUiStub = webqitStub.oohtml)) {
+        playUiStub = {};
+        webqitStub.playUi = playUiStub;
+    }
+    return playUiStub;
 }
 
 /**
@@ -66,10 +63,11 @@ export function getPlayUIGlobal(objectName) {
  * @param object modules
  * @param int depth
  * @param object thisContext
+ * @param object params
  * 
  * @return void
  */
-export function build(modules, depth = 0, thisContext = {}, $ = null) {
+export function build(modules, depth = 0, thisContext = {}, params = {}, $ = null) {
     // -----------
     if (!$) {
         $ = function(els) {
@@ -84,7 +82,7 @@ export function build(modules, depth = 0, thisContext = {}, $ = null) {
     // -----------
     _each(modules, (name, fn) => {
         if (depth) {
-            build(modules[name], depth - 1, thisContext, $);
+            build(modules[name], depth - 1, thisContext, params, $);
         } else {
             const instanceFn = function(...args) {
                 var ret = fn.call(thisContext, this.els, ...args);
@@ -96,9 +94,9 @@ export function build(modules, depth = 0, thisContext = {}, $ = null) {
             $.prototype[name] = instanceFn;
             // Create short form
             if (name.endsWith('Sync') || name.endsWith('Async')) {
-                if (thisContext.PlayUISyncIsDefault && name.endsWith('Sync')) {
+                if (params.defaultAsync && name.endsWith('Sync')) {
                     name = _beforeLast(name, 'Sync');
-                } else if (!thisContext.PlayUISyncIsDefault && name.endsWith('Async')) {
+                } else if (!params.defaultAsync && name.endsWith('Async')) {
                     name = _beforeLast(name, 'Async');
                 }
                 // Add to prototype now

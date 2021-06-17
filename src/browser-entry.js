@@ -5,4 +5,4 @@
 import PlayUI from './index.js';
 
 // As globals
-window.WQ.$ = PlayUI(window);
+window.WebQit.$ = PlayUI.call(window);

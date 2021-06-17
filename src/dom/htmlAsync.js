@@ -13,21 +13,13 @@ import { getPlayUIGlobal } from '../util.js';
  * @return Promise
  */
 export default function(els, write = null) {
-	let Reflow = getPlayUIGlobal.call(this, 'Reflow');
+	let Reflow = getPlayUIGlobal.call(this, 'reflow');
 	if (arguments.length > 1) {
 		return Reflow.onwrite((resolve, reject) => {
-			try {
-				resolve(domHtml.call(this, ...arguments));
-			} catch(e) {
-				reject(e);
-			}
+			resolve(domHtml.call(this, ...arguments));
 		}, true/*withPromise*/);
 	}
 	return Reflow.onread((resolve, reject) => {
-		try {
-			resolve(domHtml.call(this, ...arguments));
-		} catch(e) {
-			reject(e);
-		}
+		resolve(domHtml.call(this, ...arguments));
 	}, true/*withPromise*/);
 };
