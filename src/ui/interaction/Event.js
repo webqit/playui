@@ -73,6 +73,9 @@ export default class {
 	 */
 	stopPropagation() {
 		this.$.propagationStopped = true;
+		try {
+			this.$.e.stopPropagation();
+		} catch(e) {}
 	}
 		
 	/**
@@ -92,6 +95,9 @@ export default class {
 	 */
 	preventDefault() {
 		this.$.defaultPrevented = true;
+		try {
+			this.$.e.preventDefault();
+		} catch(e) {}
 	}
 		
 	/**

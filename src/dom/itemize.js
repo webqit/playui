@@ -32,15 +32,16 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
     const OOHTML = getPlayUIGlobal.call(this, 'OOHTML');
     const itemIndexAttribute = params.itemIndexAttribute || 'data-index';
     // -----------------
-    const _set = (el, templateExportsObject, key, itemData, isUpdate) => {
+    const _set = (el, templateExportsObject, itemExportId, key, itemData, isUpdate) => {
         var itemEl;
         if (isUpdate && el.children.length) {
             itemEl = childSelector(el, '[' + itemIndexAttribute + '="' + key + '"]');
-        } else {
+        } 
+        if (!itemEl) {
             // --------------
             var exports;
-            if (params.itemExportId) {
-                exports = templateExportsObject[params.itemExportId];
+            if (itemExportId) {
+                exports = templateExportsObject[itemExportId];
             } else {
                 exports = templateExportsObject[key];
                 if (_isEmpty(exports) && _isNumeric(key)) {
@@ -68,9 +69,11 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
             }
         }
         if (itemEl) {
-            if (!(_isFunction(renderCallback) && renderCallback('setState', itemEl, itemData, key, isUpdate) === false)) {
-                let setState = OOHTML.meta.get('api.setState');
-                itemEl[setState](itemData);
+            if (!(_isFunction(renderCallback) && renderCallback('render', itemEl, itemData, key, isUpdate) === false)) {
+                if (_isTypeObject(itemData)) {
+                    let setState = OOHTML.meta.get('api.setState');
+                    itemEl[setState](itemData);
+                }
             }
         }
     };
@@ -79,7 +82,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
         var itemEl = childSelector(el, '[' + itemIndexAttribute + '="' + key + '"]');
         if (itemEl) {
             var rspns;
-            if (!(_isFunction(renderCallback) && renderCallback('clearState', itemEl, oldValue, key) === false)) {
+            if (!(_isFunction(renderCallback) && renderCallback('unrender', itemEl, oldValue, key) === false)) {
                 let clearState = OOHTML.meta.get('api.clearState');
                 itemEl[clearState]();
             }
@@ -97,6 +100,8 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
         if (previousBindings && previousBindings !== items) {
             childSelectorAll(el, '[' + itemIndexAttribute + ']').forEach(_el => _el.remove());
         }
+        let moduleref = el.getAttribute(OOHTML.meta.get('attr.moduleref')),
+            itemExportId = params.itemExportId || ((moduleref || '').includes('#') ? moduleref.split('#')[1] : null);
         let templateEl = el[OOHTML.meta.get('api.moduleref')];
         let templateExportsObject = templateEl ? templateEl[OOHTML.meta.get('api.exports')] : null;
         if (!templateEl || !templateExportsObject || !_isTypeObject(items)) {
@@ -104,8 +109,8 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
         }
         // -----------------
         var isUpdate = childSelector(el, '[' + itemIndexAttribute + ']') ? true : false;
-        _each(items, (item, key) => _set(el, templateExportsObject, item, key, isUpdate));
-        if (params.setState !== false && Observer.observe) {
+        _each(items, (key, item) => _set(el, templateExportsObject, itemExportId, key, item, isUpdate));
+        if (params.live !== false && Observer.observe) {
             if (previousBindings) {
                 Observer.unobserve(previousBindings, null, null, {tags: ['#playui-itemize', itemize, this]});
             }
@@ -117,7 +122,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
                     if (entry.type === 'del') {
                         _del(el, entry.name, entry.oldValue);
                     } else if (entry.type === 'set' || entry.type === 'def') {
-                        _set(entry.name, entry.value, entry.isUpdate);
+                        _set(el, templateExportsObject, itemExportId, entry.name, entry.value, entry.isUpdate);
                     }
                 });
             }, {tags: ['#playui-itemize', itemize, this]});

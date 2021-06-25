@@ -7,7 +7,7 @@ import Rect from './UIRect.js';
 
 /**
  * Creates and plays an amiation.
- * @see Ani
+ * @see Animation
  *
  * @param Array|Element|Any		els
  * @param object				params

@@ -32,7 +32,10 @@ export default class UIRect {
                 enumerable: ['left', 'top', 'bottom', 'right', 'width', 'height',].includes(key),
             });
         });
-        this.params = params;
+        Object.defineProperty(this, 'params', {
+            get: () => params,
+            enumerable: false,
+        });
     }
     
     /**

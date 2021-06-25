@@ -6,7 +6,7 @@ import _isArray from '@webqit/util/js/isArray.js';
 import _isFunction from '@webqit/util/js/isFunction.js';
 import _arrFrom from '@webqit/util/arr/from.js';
 import _remove from '@webqit/util/arr/remove.js';
-import API from './API.js';
+import AnimationAPI from './AnimationAPI.js';
 
 /**
  * -----------------------------
@@ -41,13 +41,13 @@ export default class {
 	/**
 	 * Adds an animation instance.
 	 *
-	 * @param API			 anim
+	 * @param AnimationAPI			 anim
 	 *
 	 * @return this
 	 */
 	add(anim) {
-		if (!(anim instanceof API)) {
-			throw new Error('Argument#1 must be an animation API instance!');
+		if (!(anim instanceof AnimationAPI)) {
+			throw new Error('Argument#1 must be an animation AnimationAPI instance!');
 		}
 		this.$.animations.push(anim);
 		
@@ -74,13 +74,13 @@ export default class {
 	/**
 	 * Removes an animation instance.
 	 *
-	 * @param API			 anim
+	 * @param AnimationAPI			 anim
 	 *
 	 * @return this
 	 */
 	remove(anim) {
-		if (!(anim instanceof API)) {
-			throw new Error('Argument#1 must be an animation API instance!');
+		if (!(anim instanceof AnimationAPI)) {
+			throw new Error('Argument#1 must be an animation AnimationAPI instance!');
 		}
 		_remove(this.$.animations, anim);
 		if (this.$.removeCallback) {
@@ -145,7 +145,7 @@ export default class {
 				if (!alreadyResolved) {
 					alreadyResolved = true;
 					this.$.finishCallbacks.forEach(callback => callback());
-					res();
+					res(this);
 				}
 			};
 			var handleCancel = e => {
@@ -188,11 +188,11 @@ export default class {
 	 * @param int 		to
 	 * @param array		except
 	 *
-	 * @return void
+	 * @return this
 	 */
 	seek(to, except = []) {
 		// The validity of the "to" input is handled by each anim...
-        this.each(anim => anim.seek(to), except);
+        return this.each(anim => anim.seek(to), except);
 	}
 
 	/**
@@ -200,22 +200,22 @@ export default class {
 	 *
 	 * @param array		except
 	 *
-	 * @return void
+	 * @return this
 	 */
 	reverse(except = []) {
 		this.$.reversed = this.$.reversed ? false : true;
-        this.each(anim => anim.reverse(), except);
+        return this.each(anim => anim.reverse(), except);
 	}
 	/**
 	 * Pauses all animations.
 	 *
 	 * @param array		except
 	 *
-	 * @return void
+	 * @return this
 	 */
 	pause(except = []) {
 		this.$.playState = 'paused';
-        this.each(anim => anim.pause(), except);
+        return this.each(anim => anim.pause(), except);
 	}
 	
 	/**
@@ -225,11 +225,11 @@ export default class {
 	 *
 	 * @return void
 	 *
-	 * @return void
+	 * @return this
 	 */
 	finish(except = []) {
 		this.$.playState = 'finished';
-        this.each(anim => anim.finish(), except);
+        return this.each(anim => anim.finish(), except);
 	}
 	    	
 	/**
@@ -237,11 +237,11 @@ export default class {
 	 
 	 * @param array		except
 	 *
-	 * @return void
+	 * @return this
 	 */
 	cancel(except = []) {
 		this.$.playState = 'cancelled';
-        this.each(anim => anim.cancel(), except);
+        return this.each(anim => anim.cancel(), except);
 	}
 
 	/**
@@ -257,6 +257,7 @@ export default class {
                 return false;
             }
 		});
+		return this;
 	}
 
 	/**
@@ -272,5 +273,6 @@ export default class {
                 callback(anim);
             }
         });
+		return this;
     }
-};
+}

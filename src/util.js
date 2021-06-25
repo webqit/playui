@@ -2,25 +2,29 @@
 /**
  * @imports
  */
+import _set from '@webqit/util/obj/set.js';
 import _each from '@webqit/util/obj/each.js';
+import _isClass from '@webqit/util/js/isClass.js';
+import _isArray from '@webqit/util/js/isArray.js';
 import _beforeLast from '@webqit/util/str/beforeLast.js';
-import domInit, { query } from '@webqit/browser-pie/src/dom/index.js';
+import domInit, { queryAll } from '@webqit/browser-pie/src/dom/index.js';
 
 /**
  * Returns an array of Element object(s).
  *
- * @param Array|Element els
+ * @param Array|Element input
+ * @param Element|Document queryContext
  * 
  * @return Array
  */
-export function getEls(els) {
-    return query.call(this, els);
+export function getEls(input, queryContext = null) {
+    return queryAll.call(this, input, queryContext);
 }
 
 /**
  * Returns an array of Element object(s).
  *
- * @param Array|Element els
+ * @param String objectName
  * 
  * @return Array
  */
@@ -48,9 +52,10 @@ export function getPlayUIGlobal(objectName) {
 export function getPlayUIStub(element) {
     var webqitStub, playUiStub, webqitStubSymbol = Symbol.for('.webqit');
     if (!(webqitStub = element[webqitStubSymbol])) {
-        Object.defineProperty(element, webqitStubSymbol, {value: {}, enumerable: false});
+        webqitStub = {};
+        Object.defineProperty(element, webqitStubSymbol, {value: webqitStub, enumerable: false});
     }
-    if (!(playUiStub = webqitStub.oohtml)) {
+    if (!(playUiStub = webqitStub.playUi)) {
         playUiStub = {};
         webqitStub.playUi = playUiStub;
     }
@@ -67,31 +72,48 @@ export function getPlayUIStub(element) {
  * 
  * @return void
  */
-export function build(modules, depth = 0, thisContext = {}, params = {}, $ = null) {
+export function build(modules, depth = 0, thisContext = {}, params = {}, $ = null, _namespace = []) {
     // -----------
     if (!$) {
-        $ = function(els) {
+        $ = function(input, queryContext = null) {
             if (!(this instanceof $)) {
-                return new $(els);
+                return new $(input, queryContext);
             }
-            Object.defineProperty(this, 'els', {get: function() {
-                return els;
+            Object.defineProperty(this, 'input', {get: function() {
+                return input;
+            }});
+            var inputElements;
+            Object.defineProperty(this, 'toArray', {value: function() {
+                if (!inputElements) {
+                    inputElements = getEls.call(thisContext, input, queryContext);
+                }
+                return inputElements;
+            }});
+            Object.defineProperty(this, 'each', {value: function(callback) {
+                this.toArray().forEach(callback);
+                return this;
             }});
         };
     }
     // -----------
     _each(modules, (name, fn) => {
         if (depth) {
-            build(modules[name], depth - 1, thisContext, params, $);
+            build(modules[name], depth - 1, thisContext, params, $, _namespace.concat(name));
+        } else if (_isClass(fn) || name.substr(0, 1).toLowerCase() !== name.substr(0, 1)) {
+            // As static members
+            _set($, _namespace.concat(name), fn);
         } else {
-            const instanceFn = function(...args) {
-                var ret = fn.call(thisContext, this.els, ...args);
+
+            // As instance methods
+            const $fn2 = function(...args) {
+                var ret = fn.call(thisContext, this.toArray(), ...args);
                 if (ret instanceof Promise) {
-                    return ret.then(_ret => _ret === thisContext ? this : _ret);
+                    return ret.then(_ret => _ret === thisContext || (_isArray(_ret) && _ret[0] === thisContext) ? this : _ret);
                 }
                 return ret === thisContext ? this : ret;
             };
-            $.prototype[name] = instanceFn;
+            $.prototype[name] = $fn2;
+
             // Create short form
             if (name.endsWith('Sync') || name.endsWith('Async')) {
                 if (params.defaultAsync && name.endsWith('Sync')) {
@@ -100,8 +122,18 @@ export function build(modules, depth = 0, thisContext = {}, params = {}, $ = nul
                     name = _beforeLast(name, 'Async');
                 }
                 // Add to prototype now
-                $.prototype[name] = instanceFn;
+                $.prototype[name] = $fn2;
             }
+
+            // As static methods
+            // We preserve the incoming context so as to return it
+            _set($, _namespace.concat(name), function(...args) {
+                var ret = fn.call(thisContext, ...args);
+                if (ret instanceof Promise) {
+                    return ret.then(_ret => _ret === thisContext || (_isArray(_ret) && _ret[0] === thisContext) ? this : _ret);
+                }
+                return ret === thisContext ? this : ret;
+            });
         }
     });
     // -----------

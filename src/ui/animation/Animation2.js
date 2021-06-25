@@ -2,15 +2,15 @@
 /**
  * @imports
  */
-import API from './API.js';
+import AnimationAPI from './AnimationAPI.js';
 
 /**
  * ---------------------------
- * The Ani2 class
+ * The Animation2 class
  * ---------------------------
  */
 			
-export default class Ani2 extends API {
+export default class Animation2 extends AnimationAPI {
 	
 	/**
 	 * Creates an amiation from
@@ -168,4 +168,4 @@ export default class Ani2 extends API {
 	ready(succes, error) {
 		succes(this.$.anim, this.$.params);
 	}
-};
+}

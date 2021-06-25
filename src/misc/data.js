@@ -21,14 +21,25 @@ import { getPlayUIStub, getEls } from '../util.js';
  */
 export default function(els, requestOrPayload, val = null) {
 	const _els = getEls.call(this, els);
-	if (arguments.length === 2) {
+	if (arguments.length === 1 || (
+		arguments.length === 2 && (_isString(requestOrPayload) || _isArray(requestOrPayload))
+	)) {
 		const playUiStub = getPlayUIStub(_els[0]);
 		if (!playUiStub.data) {
 			playUiStub.data = {};
 		}
+		// ------------------
+		// Retrieve single prop
 		if (_isString(requestOrPayload)) {
 			return playUiStub.data[requestOrPayload];
 		}
+		// ------------------
+		// Retrieve all props
+		if (arguments.length === 1) {
+			requestOrPayload = Object.keys(playUiStub.data);
+		}
+		// ------------------
+		// Retrieve listed props
 		if (_isArray(requestOrPayload)) {
 			var vals = {};
 			requestOrPayload.forEach(key => {
@@ -37,6 +48,7 @@ export default function(els, requestOrPayload, val = null) {
 			return vals;
 		}
 	}
+
 	var payload = requestOrPayload;
 	if (!_isObject(requestOrPayload)) {
 		payload = _objFrom(requestOrPayload, val);
@@ -47,12 +59,18 @@ export default function(els, requestOrPayload, val = null) {
 			playUiStub.data = {};
 		}
 		_each(payload, (key, val) => {
+			// ------------------
+			// Unset prop?
 			if (_isUndefined(val)) {
 				delete playUiStub.data[key];
-			} else {
+			}
+			// ------------------
+			// Set prop
+			else {
 				playUiStub.data[key] = val;
 			}
 		});
 	});
+
 	return this;
-};
+}

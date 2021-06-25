@@ -4,13 +4,14 @@
  */
 import _isNumber from '@webqit/util/js/isNumber.js';
 import _isFunction from '@webqit/util/js/isFunction.js';
+
 /**
  * ---------------------------
  * The Element utility class
  * ---------------------------
  */
 			
-export default class AniAPI {
+export default class AnimationAPI {
 	
 	/**
 	 * Creates an amiation from
@@ -173,4 +174,4 @@ export default class AniAPI {
 		this.ready(anim => anim.cancel());
 		return this;
 	}
-};
+}

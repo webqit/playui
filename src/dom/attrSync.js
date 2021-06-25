@@ -41,10 +41,10 @@ export default function(els, requestOrPayload, valOrMutation = null, subValMutat
 		}
 	}
 	var payload = requestOrPayload;
-	if (!_isObject(payload)) {
-		payload = _objFrom(requestOrPayload, valOrMutation);
-	} else {
+	if (_isObject(payload)) {
 		subValMutation = valOrMutation;
+	} else {
+		payload = _objFrom(requestOrPayload, valOrMutation);
 	}
 	_els.forEach(el => {
 		_each(payload, (name, valOrMutation) => {

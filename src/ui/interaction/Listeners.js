@@ -58,7 +58,10 @@ export default class Listeners extends Firebase {
 			if (_isString(CustomEvents[TYPE])) {
 				// >> LINK THE ALIAS EVENT TO THIS FIREBASE
 				this.handlersList[TYPE] = e => this.fire({type:TYPE, e});
-				this.addFireable(new Listener(this.handlersList[TYPE], CustomEvents[TYPE]));
+				this.add(new Listener(this.subject, {
+					handler: this.handlersList[TYPE],
+					filter: CustomEvents[TYPE],
+				}));
 			} else if (_isClass(CustomEvents[TYPE])) {
 				// >> LINK THE CUSTOM EVENT TO THIS FIREBASE
 				this.handlersList[TYPE] = new CustomEvents[TYPE];

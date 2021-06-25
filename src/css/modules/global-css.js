@@ -97,6 +97,34 @@ export function readVar(name) {
 }
 
 /**
+ * Derives a unique selector for the given element following directives in params.
+ * 
+ * @param Element el 
+ * @param Object params 
+ * 
+ * @return String
+ */
+var uuSelectorIndex = 0;
+var getUuid = () => (+ new Date()) + (uuSelectorIndex ++);
+export function deriveSelector(el, params) {
+	if (!el.id && params.autoId) {
+		el.id = getUuid();
+	}
+	if (el.id) {
+		return `#${el.id}`;
+	}
+	var uuid = el.getAttribute('playui-uuid');
+	if (!uuid && params.autoUuid !== false) {
+		uuid = getUuid();
+		el.setAttribute('playui-uuid', uuid);
+	}
+	if (!uuid) {
+		throw new Error(`All strategies to derive a selector for element has been disabled.`);
+	}
+	return `[playui-uuid="${uuid}"]`;
+}
+
+/**
  * FInds the keyframes of the given animation name(s) across all stylesheets.
  *
  * @param string|array		name

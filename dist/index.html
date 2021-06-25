@@ -1,0 +1,44 @@
+<html>
+    <head>
+        <script src="http://localhost:4000/play-ui/dist/main.js"></script>
+        <style>
+            h1 {
+                color: blue;
+            }
+            h1:after {
+                color: black;
+            }
+        </style>
+    </head>
+    <body>
+        <h1 class="sss" style="height: 0px; background-color: yellow; overflow: hidden;">Hello world!</h1>
+        <script>
+            WebQit.$.ui.on(document.body, 'eee', () => {
+                alert(22);
+            });
+            WebQit.$.ui.on(document.body, 'click', () => {
+                WebQit.$.ui.trigger(document.body, 'eee');
+                alert();
+            });
+            WebQit.$('.sss').play({height: 'auto'}).then(async $el => {
+                await $el.css({
+                    content: '"----------"',
+                    color: 'red',
+                }, {
+                    scope: 'global',
+                    pseudo: ':after',
+                });
+                await $el.css({
+                    color: 'green',
+                }, {
+                    scope: 'global',
+                    pseudo: ':after',
+                    noScratchPad: true,
+                    prepend: true,
+                });
+                console.log($el)
+                console.log($el.cssSync(['color'], {scope: 'global', all: true, pseudo: ':after'}));
+            });
+        </script>
+    </body>
+</html>

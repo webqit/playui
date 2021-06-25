@@ -9,8 +9,8 @@ import _merge from '@webqit/util/obj/merge.js';
 import _isNumber from '@webqit/util/js/isNumber.js';
 import _isEmpty from '@webqit/util/js/isEmpty.js';
 import Timeline from './Timeline.js';
-import Ani from './Ani.js';
-import Ani2 from './Ani2.js';
+import Animation from './Animation.js';
+import Animation2 from './Animation2.js';
 
 /**
  * ---------------------------
@@ -85,7 +85,7 @@ export default class {
         }
         // ---------------------------------
         var createAnimation = (nowPlaying, entry, effect, params) => {
-            var _ani = _isFunction(effect) ? Ani2 : Ani;
+            var _ani = _isFunction(effect) ? Animation2 : Animation;
             var animation = new _ani(entry.el, effect, params);
             nowPlaying.add(animation);
             if (params.always) {
@@ -109,9 +109,9 @@ export default class {
             var params = _merge({}, this.nowPlayingParams, entry.params);
             params.delay = (params.delay || 0);
             if (_isNumber(params.lag) || _isNumber(params.endLag)) {
-                var lastAni = _arrLast(nowPlaying.$.animations);
-                if (lastAni) {
-                    lastAni.ready((anim, _params) => {
+                var lastAnimation = _arrLast(nowPlaying.$.animations);
+                if (lastAnimation) {
+                    lastAnimation.ready((anim, _params) => {
                         if (_isNumber(params.lag)) {
                             params.delay += _params.delay + params.lag;
                         } else {
@@ -169,4 +169,4 @@ export default class {
         return this.nowPlaying.play();
     }
 
-};
+}

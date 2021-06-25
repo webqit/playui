@@ -1,16 +1,18 @@
 /**
  * @imports
  */
-import play from './animation/play.js';
-import on from './interaction/on.js';
+import CustomEvents from './interaction/CustomEvents.js';
 import off from './interaction/off.js';
-import trigger from './interaction/trigger.js';
+import on from './interaction/on.js';
+import play from './animation/play.js';
 //import rect from './vector/rect.js';
+import trigger from './interaction/trigger.js';
 
 export {
-    play,
-    on,
+    CustomEvents,
     off,
-    trigger,
+    on,
+    play,
     //rect,
+    trigger,
 }

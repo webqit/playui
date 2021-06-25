@@ -21,15 +21,15 @@ export default class Transaction {
 	 * If a callback is provided, it synces the entire operation with Reflow's normal read/write cycles.
 	 *
 	 * @param Element				el 
-	 * @param string|array|object	params
+	 * @param string|array|object	props
 	 * @param function	 			readCallback
 	 * @param function	 			writeCallback
 	 *
 	 * @return void
 	 */
-	constructor(el, params, readCallback, writeCallback) {
+	constructor(el, props, readCallback, writeCallback) {
 		this.el = el;
-		this.params = _arrFrom(params);
+		this.props = _arrFrom(props);
 		this.readCallback = readCallback;
 		this.writeCallback = writeCallback;
 		this.$savepoints = [];
@@ -40,14 +40,31 @@ export default class Transaction {
 	 *
 	 * @return Promise|mixed
 	 */
-	save() {
-		var readerDisposition = this.readCallback(this.el, this.params);
+	savepoint() {
+		var readerDisposition = this.readCallback(this.el, this.props);
 		if (readerDisposition instanceof Promise) {
-			return readerDisposition.then(data => this.$savepoints.push(data));
+			return readerDisposition.then(record => {
+				if (_isObject(record)) {
+					this.$savepoints.push(record);
+				}
+				return record;
+			});
 		}
 		if (_isObject(readerDisposition)) {
-			return this.$savepoints.push(readerDisposition);
+			this.$savepoints.push(readerDisposition);
+			return readerDisposition;
 		}
+	}
+	
+	/**
+	 * Calls writeCallback.
+	 *
+	 * @param object	record
+	 * 
+	 * @return Promise|mixed
+	 */
+	apply(record) {
+		return this.writeCallback(this.el, record);
 	}
 	
 	/**
@@ -68,15 +85,16 @@ export default class Transaction {
 	 * Rolls the transaction back to a savepoint.
 	 *
 	 * @param int	savepoint
+	 * @param bool	preserveCurrentState
 	 *
 	 * @return void}Promise
 	 */
-	rollback(savepoint = 0) {
+	rollback(savepoint = 0, preserveCurrentState = false) {
 		if (!_isNumeric(savepoint)) {
 			throw new Error('A valid transaction ID transaction must be provided!');
 		}
 		// -----------------------
-		var getRollbackData = currentRead => {
+		var getRollbackData = currentState => {
 			var savepoints = this.$savepoints.splice(savepoint);
 			// ToSavepoint is our target point
 			var toSavepoint = savepoints.shift();
@@ -85,29 +103,29 @@ export default class Transaction {
 			}
 			// FromSavepoint is our last point before current,
 			// which we need to validate with current
-			var fromSavepoint = savepoints.pop();
-			var data = {};
+			var latestTransactionRecord = savepoints.pop();
+			var record = {};
 			// Restore only what's applicable.
-			this.params.forEach(param => {
+			this.props.forEach(prop => {
 				// We'll restore only values that have
-				// NOT changed from what we earlier COMMITTED...
-				if (fromSavepoint && currentRead[param] !== fromSavepoint[param]) {
+				// NOT changed from what we earlier RECORDED...
+				if (preserveCurrentState && latestTransactionRecord && currentState[prop] !== latestTransactionRecord[prop]) {
 					return
 				}
 				// We'll restore only values that
 				// HAVE changed from what we earlier RECORDED...
-				if (currentRead[param] !== toSavepoint[param]) {
-					data[param] = toSavepoint[param];
+				if (currentState[prop] !== toSavepoint[prop]) {
+					record[prop] = toSavepoint[prop];
 				}
 			});
-			return data;
+			return record;
 		};
 		// -----------------------
-		var currentRead = this.readCallback(this.el, this.params);
-		if (currentRead instanceof Promise) {
-			return currentRead.then(currentRead => this.writeCallback(this.el, getRollbackData(currentRead)));
+		var currentState = preserveCurrentState ? this.readCallback(this.el, this.props) : {};
+		if (currentState instanceof Promise) {
+			return currentState.then(currentState => this.apply(getRollbackData(currentState)));
 		}
-		return this.writeCallback(this.el, getRollbackData(currentRead));
+		return this.apply(getRollbackData(currentState));
 	}
 	
 	/**
@@ -115,7 +133,7 @@ export default class Transaction {
 	 *
 	 * @return int
 	 */
-	depth() {
+	get length() {
 		return this.$savepoints.length;
 	}
-};
+}

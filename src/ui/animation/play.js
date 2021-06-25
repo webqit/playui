@@ -4,12 +4,12 @@
  */
 import _isFunction from '@webqit/util/js/isFunction.js';
 import { getEls } from '../../util.js';
-import Ani from './Ani.js';
-import Ani2 from './Ani2.js';
+import Animation from './Animation.js';
+import Animation2 from './Animation2.js';
 
 /**
  * Creates and plays an amiation.
- * @see Ani
+ * @see Animation
  *
  * @param Array|Element|Any		els
  * @param array|object|string	effect
@@ -18,6 +18,6 @@ import Ani2 from './Ani2.js';
  * @return Promise
  */
 export default function play(els, effect, params = {}) {
-	var _Ani = _isFunction(effect) ? Ani2 : Ani;
-	return Promise.all(getEls.call(this, els).map(el => (new _Ani(el, effect, params)).play().then(() => this)));
-};
+	var _Animation = _isFunction(effect) ? Animation2 : Animation;
+	return Promise.all(getEls.call(this, els).map(el => (new _Animation(el, effect, params, this)).play().then(() => this)));
+}

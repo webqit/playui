@@ -83,4 +83,4 @@ MultitapEvents.forEach(event => {
 export {
 	CustomEvents as default,
 	Multitap
-};
+}

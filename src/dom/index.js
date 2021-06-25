@@ -7,7 +7,6 @@ import attrAsync from './attrAsync.js';
 import attrSync from './attrSync.js';
 import classSync from './classSync.js';
 import classAsync from './classAsync.js';
-import data from './data.js';
 import getTextNodes from './getTextNodes.js';
 import htmlAsync from './htmlAsync.js';
 import htmlSync from './htmlSync.js';
@@ -27,7 +26,6 @@ export {
     attrSync,
     classSync,
     classAsync,
-    data,
     getTextNodes,
     htmlAsync,
     htmlSync,

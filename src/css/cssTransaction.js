@@ -2,9 +2,10 @@
 /**
  * @imports
  */
-import Transaction from '../Transaction.js';
-import inlineCss from './inlineCss.js';
+import Transaction from '../misc/classes/Transaction.js';
+import { readInline } from './cssSync.js';
 import cssAsync from './cssAsync.js';
+import cssSync from './cssSync.js';
 import { getEls } from '../util.js';
 
 /**
@@ -12,14 +13,16 @@ import { getEls } from '../util.js';
  *
  * @param Array|Element			els
  * @param string|array			props
+ * @param bool					asyncWrites
  *
  * @return Transaction
  */
-export default function(els, props) {
+export default function(els, props, asyncWrites = false) {
 	const _el = getEls.call(this, els);
+	const cssModule = asyncWrites ? cssAsync : cssSync;
 	return new Transaction(_el[0], props, (el, props) => {
-		return inlineCss.call(this, el, props);
+		return readInline.call(this, el, props);
 	}, (el, data) => {
-		return cssAsync.call(this, el, data);
+		return cssModule.call(this, el, data);
 	});
-};
+}

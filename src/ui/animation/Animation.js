@@ -15,20 +15,21 @@ import _isEmpty from '@webqit/util/js/isEmpty.js';
 import _isUndefined from '@webqit/util/js/isUndefined.js';
 // ------------------------------------
 import { readVar, readKeyframes } from '../../css/modules/global-css.js';
-import transactCss from '../../css/transactCss.js';
+import transactCss from '../../css/cssTransaction.js';
 import cssSync from '../../css/cssSync.js';
 import CSSOM from '../../css/modules/CSSOM.js';
 // ------------------------------------
-import API from './API.js';
+import AnimationAPI from './AnimationAPI.js';
+import { getPlayUIGlobal } from '../../util.js';
 
 /**
  * ---------------------------
- * The Ani class
+ * The Animation class
  * ---------------------------
  */
 
-const cssAnimNameCache = {};
-export default class Ani extends API {
+const cssAnimationNameCache = {};
+export default class Animation extends AnimationAPI {
 	
 	/**
 	 * Creates an amiation from
@@ -40,8 +41,9 @@ export default class Ani extends API {
 	 *
 	 * @return this
 	 */
-	constructor(el, effect, params = {}) {
+	constructor(el, effect, params = {}, cntxt = null) {
 		super(el, effect, params);
+		WebQit = getPlayUIGlobal.call(cntxt);
 		// -----------------------------
 		this.$.params.fill = this.$.params.fill || 'forwards';
 		if (!('duration' in this.$.params)) {
@@ -122,11 +124,11 @@ export default class Ani extends API {
 		if (_isFunction(effect)) {
 			effect(el, init);
 		} else {
-			Ani.createCallback(el, effect, init, error => {
+			Animation.createCallback(el, effect, init, error => {
 				// -------------------
 				this.$.error = error;
 				// -------------------
-			}, this.$.params.animNameNoCache);
+			}, this.$.params.animNameNoCache, WebQit);
 		}
 	}
 	
@@ -136,7 +138,7 @@ export default class Ani extends API {
 	 * @param function		succes
 	 * @param function		error
 	 *
-	 * @return void
+	 * @return this
 	 */
 	ready(succes, error) {
 		if (this.$.error) {
@@ -148,6 +150,7 @@ export default class Ani extends API {
 		} else {
 			this.$.readyCallbacks.push(succes);
 		}
+		return this;
 	}
 	
 	/**
@@ -164,7 +167,7 @@ export default class Ani extends API {
 	 *
 	 * @return void
 	 */
-	static createCallback(el, effect, ready, error, animNameNoCache) {
+	static createCallback(el, effect, ready, error, animNameNoCache, WebQit) {
 		// -----------------------------
 		// Resolve firstFrame from current state?
 		// -----------------------------
@@ -175,9 +178,9 @@ export default class Ani extends API {
 			WebQit.DOM.reflow.onread(() => {
 				if (isArrayButEmptyFirstKeyframe) {
 					effect.shift();
-					Ani.createCallback(el, [cssSync.call(WebQit, el, Object.keys(effect[0])), ...effect], ready, error, animNameNoCache);
+					this.createCallback(el, [cssSync.call(WebQit, el, Object.keys(effect[0])), ...effect], ready, error, animNameNoCache, WebQit);
 				} else {
-					Ani.createCallback(el, [cssSync.call(WebQit, el, Object.keys(effect)), {...effect}/*clone*/], ready, error, animNameNoCache);
+					this.createCallback(el, [cssSync.call(WebQit, el, Object.keys(effect)), {...effect}/*clone*/], ready, error, animNameNoCache, WebQit);
 				}
 			});
 			return;
@@ -187,13 +190,13 @@ export default class Ani extends API {
 		// -----------------------------
 		if (_isString(effect)) {
 			// Retrieve keyframes of the given animation name from css
-			if (!cssAnimNameCache[effect] || !cssAnimNameCache[effect].length || animNameNoCache) {
-				cssAnimNameCache[effect] = readKeyframes.call(WebQit, effect);
-				if (!cssAnimNameCache[effect].length && error) {
+			if (!cssAnimationNameCache[effect] || !cssAnimationNameCache[effect].length || animNameNoCache) {
+				cssAnimationNameCache[effect] = readKeyframes.call(WebQit, effect);
+				if (!cssAnimationNameCache[effect].length && error) {
 					error('Animation name "' + effect + '" not found in any stylesheet!');
 				}
 			}
-			effect = cssAnimNameCache[effect];
+			effect = cssAnimationNameCache[effect];
 		}
 		// -----------------------------
 		// Resolve auto pixels...
@@ -214,19 +217,32 @@ export default class Ani extends API {
 			if (keyframesWithAutoSizes.length) {
 				// apply() will be called when ready
 				// We return transactCss(), which in itself returns the return of apply()
-				transactCss.call(WebQit, el, css, el => el.getBoundingClientRect()).then(result => {
-					// Clone
-					effect = effect.map(kf => ({...kf}));
-					keyframesWithAutoSizes.forEach(i => {
-						if (effect[i].width === 'auto') {
-							effect[i].width = result.width + 'px';
-						}
-						if (effect[i].height === 'auto') {
-							effect[i].height = result.height + 'px';
-						}
-					});
-					ready(effect);
+				var props = Object.keys(css);
+				var transaction = transactCss.call(WebQit, el, props);
+				// -------------------
+				// Recored initial state
+				transaction.savepoint();
+				// Apply auto values
+				transaction.apply(css);
+				// Record rect
+				var _rect = el.getBoundingClientRect();
+				var rect = props.reduce((rect, prop) => {
+					rect[prop] = _rect[prop];
+					return rect;
+				}, {});
+				transaction.rollback();
+				// -------------------
+				// Clone
+				effect = effect.map(kf => ({...kf}));
+				keyframesWithAutoSizes.forEach(i => {
+					if (effect[i].width === 'auto') {
+						effect[i].width = rect.width + 'px';
+					}
+					if (effect[i].height === 'auto') {
+						effect[i].height = rect.height + 'px';
+					}
 				});
+				ready(effect);
 				return;
 			}
 		}
@@ -236,4 +252,4 @@ export default class Ani extends API {
 		// We return the return of success()
 		ready(effect);
 	}
-};
+}
