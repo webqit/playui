@@ -6,6 +6,7 @@ import _set from '@webqit/util/obj/set.js';
 import _each from '@webqit/util/obj/each.js';
 import _isClass from '@webqit/util/js/isClass.js';
 import _isArray from '@webqit/util/js/isArray.js';
+import _isObject from '@webqit/util/js/isObject.js';
 import _beforeLast from '@webqit/util/str/beforeLast.js';
 import domInit, { queryAll } from '@webqit/browser-pie/src/dom/index.js';
 
@@ -18,6 +19,9 @@ import domInit, { queryAll } from '@webqit/browser-pie/src/dom/index.js';
  * @return Array
  */
 export function getEls(input, queryContext = null) {
+    if (_isObject(input) && input.toArray) {
+        return input.toArray();
+    }
     return queryAll.call(this, input, queryContext);
 }
 
@@ -97,32 +101,36 @@ export function build(modules, depth = 0, thisContext = {}, params = {}, $ = nul
     }
     // -----------
     _each(modules, (name, fn) => {
-        if (depth) {
+        if (depth || ['classes', 'utils'].includes(name)) {
             build(modules[name], depth - 1, thisContext, params, $, _namespace.concat(name));
         } else if (_isClass(fn) || name.substr(0, 1).toLowerCase() !== name.substr(0, 1)) {
             // As static members
             _set($, _namespace.concat(name), fn);
         } else {
 
-            // As instance methods
-            const $fn2 = function(...args) {
-                var ret = fn.call(thisContext, this.toArray(), ...args);
-                if (ret instanceof Promise) {
-                    return ret.then(_ret => _ret === thisContext || (_isArray(_ret) && _ret[0] === thisContext) ? this : _ret);
-                }
-                return ret === thisContext ? this : ret;
-            };
-            $.prototype[name] = $fn2;
+            // Create instance methods
+            if (!['classes', 'utils'].includes(_namespace[_namespace.length - 1])) {
+                // As instance methods
+                const $fn2 = function(...args) {
+                    var ret = fn.call(thisContext, this.toArray(), ...args);
+                    if (ret instanceof Promise) {
+                        return ret.then(_ret => _ret === thisContext || (_isArray(_ret) && _ret[0] === thisContext) ? this : _ret);
+                    }
+                    return ret === thisContext ? this : ret;
+                };
 
-            // Create short form
-            if (name.endsWith('Sync') || name.endsWith('Async')) {
-                if (params.defaultAsync && name.endsWith('Sync')) {
-                    name = _beforeLast(name, 'Sync');
-                } else if (!params.defaultAsync && name.endsWith('Async')) {
-                    name = _beforeLast(name, 'Async');
-                }
-                // Add to prototype now
                 $.prototype[name] = $fn2;
+                // Create short form
+                if (name.endsWith('Sync') || name.endsWith('Async')) {
+                    var nameUnprefixed;
+                    if (params.defaultAsync && name.endsWith('Async')) {
+                        nameUnprefixed = _beforeLast(name, 'Async');
+                    } else if (!params.defaultAsync && name.endsWith('Sync')) {
+                        nameUnprefixed = _beforeLast(name, 'Sync');
+                    }
+                    // Add to prototype now
+                    $.prototype[nameUnprefixed] = $fn2;
+                }
             }
 
             // As static methods
@@ -134,6 +142,7 @@ export function build(modules, depth = 0, thisContext = {}, params = {}, $ = nul
                 }
                 return ret === thisContext ? this : ret;
             });
+
         }
     });
     // -----------

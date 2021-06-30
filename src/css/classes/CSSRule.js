@@ -4,7 +4,7 @@
  */
 import _isObject from '@webqit/util/js/isObject.js';
 import _isNumeric from '@webqit/util/js/isNumeric.js';
-import { unitBasedProps } from './global-css.js';
+import { unitBasedProps } from '../global-css.js';
 import TransformRule from './TransformRule.js';
 import QuadRule from './QuadRule.js';
 import CSSValue from './CSSValue.js';

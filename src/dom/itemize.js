@@ -18,14 +18,12 @@ import { getPlayUIGlobal, getPlayUIStub, getEls } from '../util.js';
  * Childnodes will be automatically created/removed per key.
  *
  * @param Array|Element 		els
- * @param array 		items
- * @param function 		renderCallback
- * @param function 		overflowCallback
- * @param Object 		params
+ * @param array 		        items
+ * @param Object 		        params
  *
  * @return this
  */
-export default function itemize(els, items, renderCallback = null, overflowCallback = null, params = {}) {
+export default function itemize(els, items, params = {}) {
     const window = getPlayUIGlobal.call(this, 'window');
     const Observer = getPlayUIGlobal.call(this, 'Observer');
     const Reflow = getPlayUIGlobal.call(this, 'reflow');
@@ -69,7 +67,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
             }
         }
         if (itemEl) {
-            if (!(_isFunction(renderCallback) && renderCallback('render', itemEl, itemData, key, isUpdate) === false)) {
+            if (!(_isFunction(params.renderCallback) && params.renderCallback('render', itemEl, itemData, key, isUpdate) === false)) {
                 if (_isTypeObject(itemData)) {
                     let setState = OOHTML.meta.get('api.setState');
                     itemEl[setState](itemData);
@@ -82,7 +80,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
         var itemEl = childSelector(el, '[' + itemIndexAttribute + '="' + key + '"]');
         if (itemEl) {
             var rspns;
-            if (!(_isFunction(renderCallback) && renderCallback('unrender', itemEl, oldValue, key) === false)) {
+            if (!(_isFunction(params.renderCallback) && params.renderCallback('unrender', itemEl, oldValue, key) === false)) {
                 let clearState = OOHTML.meta.get('api.clearState');
                 itemEl[clearState]();
             }
@@ -129,9 +127,17 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
             getPlayUIStub(el).boundItems = items;
         }
         // -----------------
-        if (overflowCallback) {
-            var normalizationState, collapsed = new Map(), reflow = async (contentRect = null, boundingRect = null) => {
+        if (params.overflowCallback) {
+            var normalizationState, collapsed = new Map();
+            var reflow = async (contentRect = null, boundingRect = null, isRerun = false) => {
+                // ---------------
                 var uncollapsed = Object.values(items).filter(item => !collapsed.has(item));
+                if (!isRerun && _isFunction(params.overflowContainerCallback)) {
+                    var shouldContinue = await params.overflowContainerCallback(true, el, uncollapsed.length, collapsed.size);
+                    if (shouldContinue === false) {
+                        return;
+                    }
+                }
                 // ---------------
                 if (!contentRect || !boundingRect) {
                     // Block nw ResizeObserver events
@@ -186,7 +192,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
                             resolve();
                         }, true/* withPromise */);
                         // --------
-                        await overflowCallback('collapse', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
+                        await params.overflowCallback('collapse', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
                     } else {
                         normalizationState = null;
                     }
@@ -202,7 +208,7 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
                         var allowance = currentContainerSize - currentElSize;
                         if (allowance >= collapsed.get(_item)/* collapsion_size */ && (_itemDetails = itemDetails(_item))) {
                             collapsed.delete(_item);
-                            await overflowCallback('restore', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
+                            await params.overflowCallback('restore', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
                         } else {
                             normalizationState = null;
                         }
@@ -215,7 +221,9 @@ export default function itemize(els, items, renderCallback = null, overflowCallb
                 // ---------------
                 // Loop until no more normalizing
                 if (normalizationState) {
-                    await reflow();
+                    await reflow(null, null, true);
+                } else if (_isFunction(params.overflowContainerCallback)) {
+                    await params.overflowContainerCallback(false, el, uncollapsed.length, collapsed.size);
                 }
             };
             // ---------------

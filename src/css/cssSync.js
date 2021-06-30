@@ -11,8 +11,8 @@ import _arrFrom from '@webqit/util/arr/from.js';
 import _each from '@webqit/util/obj/each.js';
 import _merge from '@webqit/util/obj/merge.js';
 import _beforeLast from '@webqit/util/str/beforeLast.js';
-import CSSOM from './modules/CSSOM.js';
-import { vendorize, normalizeStylesheetProps, deriveSelector } from './modules/global-css.js';
+import CSSOM from './classes/CSSOM.js';
+import { vendorize, normalizeStylesheetProps, deriveSelector } from './global-css.js';
 import { getPlayUIGlobal, getEls } from '../util.js';
 
 /**

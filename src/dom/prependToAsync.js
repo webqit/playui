@@ -3,18 +3,18 @@
  * @imports
  */
 import { getPlayUIGlobal } from '../util.js';
-import domAppend from './appendSync.js';
+import domPrependTo from './prependToSync.js';
 
 /**
- * The async type of domAppend().
+ * The async type of domPrependTo().
  *
- * @see domAppend()
+ * @see domPrependTo()
  *
  * @return Promise
  */
 export default function(els, ...args) {
 	const Reflow = getPlayUIGlobal.call(this, 'reflow');
 	return Reflow.onwrite((resolve, reject) => {
-		resolve(domAppend.call(this, els, ...args));
+		resolve(domPrependTo.call(this, els, ...args));
 	}, true/*withPromise*/);
 }

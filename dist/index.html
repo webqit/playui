@@ -20,7 +20,7 @@
                 WebQit.$.ui.trigger(document.body, 'eee');
                 alert();
             });
-            WebQit.$('.sss').play({height: 'auto'}).then(async $el => {
+            WebQit.$('.sss').play({height: 'auto', transform: 'translate(0px, 50px)'}).then(async $el => {
                 await $el.css({
                     content: '"----------"',
                     color: 'red',

@@ -3,6 +3,7 @@
  */
 import data from './data.js';
 import transaction from './transaction.js';
+import * as classes from './classes/index.js';
 
 /**
  * @exports
@@ -10,4 +11,5 @@ import transaction from './transaction.js';
 export {
     data,
     transaction,
+    classes,
 }

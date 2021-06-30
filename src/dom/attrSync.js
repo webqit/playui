@@ -54,7 +54,7 @@ export default function(els, requestOrPayload, valOrMutation = null, subValMutat
 				// -----------------------
 				// Add or remove
 				// -----------------------
-				var values = _isString(valOrMutation) ? valOrMutation.trim().split(' ').map(val => val.trim()).filter(a => a) : _arrFrom(valOrMutation);
+				var values = _arrFrom(valOrMutation).reduce((list, c) => list.concat(c.split(' ')), []).map(a => a.trim()).filter(a => a);
 				if (!subValMutation && _intersect(currentValArray, values).length) {
 					// Add...
 					el.setAttribute(name, _exclude(currentValArray, ...values).join(' '));

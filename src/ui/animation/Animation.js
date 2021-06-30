@@ -14,10 +14,10 @@ import _isFunction from '@webqit/util/js/isFunction.js';
 import _isEmpty from '@webqit/util/js/isEmpty.js';
 import _isUndefined from '@webqit/util/js/isUndefined.js';
 // ------------------------------------
-import { readVar, readKeyframes } from '../../css/modules/global-css.js';
+import { readVar, readKeyframes } from '../../css/global-css.js';
 import transactCss from '../../css/cssTransaction.js';
 import cssSync from '../../css/cssSync.js';
-import CSSOM from '../../css/modules/CSSOM.js';
+import CSSOM from '../../css/classes/CSSOM.js';
 // ------------------------------------
 import AnimationAPI from './AnimationAPI.js';
 import { getPlayUIGlobal } from '../../util.js';

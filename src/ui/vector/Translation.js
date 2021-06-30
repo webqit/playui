@@ -5,7 +5,7 @@
 import _intersect from '@webqit/util/arr/intersect.js';
 import _with from '@webqit/util/obj/with.js';
 import cssSync from '../../css/cssSync.js';
-import TransformRule from '../../css/modules/TransformRule.js';
+import TransformRule from '../../css/classes/TransformRule.js';
 import UIRect from './UIRect.js';
 
 /**

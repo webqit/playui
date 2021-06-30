@@ -20,4 +20,4 @@ export default function(els, ...args) {
 		el.append(...args); 
 	});
 	return this; 
-};
+}

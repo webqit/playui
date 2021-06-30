@@ -25,14 +25,18 @@ export default class TransformRule {
 	 * @return this
 	 */
 	constructor(transformRules) {
-		_each(transformRules, (rule, value) => {
-			if (['rotate', 'scale', 'skew', 'translate'].includes(rule)) {
-				var _Rule = _toTitle(rule);
-				this[_Rule] = _isArray(value)
-					? new TransformRule[_Rule](...value)
-					: new TransformRule[_Rule](value);
-			}
-		});
+		if (transformRules === 'none') {
+			this.isNone = true;
+		} else {
+			_each(transformRules, (rule, value) => {
+				if (['rotate', 'scale', 'skew', 'translate'].includes(rule)) {
+					var _Rule = _toTitle(rule);
+					this[_Rule] = _isArray(value)
+						? new TransformRule[_Rule](...value)
+						: new TransformRule[_Rule](value);
+				}
+			});
+		}
 	}
 
     /**
@@ -52,10 +56,36 @@ export default class TransformRule {
 	 * @return string
 	 */
 	stringify(params = {}) {
+		if (this.isNone) {
+			return 'none';
+		}
 		return ['rotate', 'scale', 'skew', 'translate'].reduce((str, rule) => {
 			var _Rule = _toTitle(rule);
 			return str + (this[_Rule] && this[_Rule].length ? ' ' + this[_Rule] : '');
 		}, '').trim();
+	}
+
+	/**
+	 * Parses/decodes transform rule
+	 *
+	 * @param string str
+	 *
+	 * @return object
+	 */
+	 static parse(str, CTXT = null) {
+		if (str === 'none') {
+			return new this(str);
+		}
+		if (!['translate', 'scale', 'rotate'].reduce((t, p) => t || str.startsWith(p), false)) {
+			return this.parseMatrix(str, CTXT);
+		}
+		var transform = {};
+		var regex = /(\w+)\((.+?)\)/g;
+		var match = null;
+		while(match = regex.exec(str)) {
+			transform[match[1]] = (match[2].indexOf(',') > -1 ? match[2].replace(' ', '').split(',') : match[2]);
+		}
+		return new this(transform);
 	}
 
 	/**
@@ -70,7 +100,10 @@ export default class TransformRule {
 	 *
 	 * @return {Object}
 	 */
-	static parse(str, CTXT = null) {
+	static parseMatrix(str, CTXT = null) {
+		if (str === 'none') {
+			return new this(str);
+		}
 		const window = getPlayUIGlobal(CTXT, 'window');
 		// String to matrix
 		var stom = function(transformStr) {
@@ -128,23 +161,6 @@ export default class TransformRule {
 			rotate: r2d(Math.atan2(B, A)),
 			skew: r2d(Math.atan(skew)),
 		});
-	}
-
-	/**
-	 * Parses/decodes transform rule
-	 *
-	 * @param string str
-	 *
-	 * @return object
-	 */
-	static parseRaw(str) {
-		var transform = {};
-		var regex = /(\w+)\((.+?)\)/g;
-		var match = null;
-		while(match = regex.exec(str)) {
-			transform[match[1]] = (match[2].indexOf(',') > -1 ? match[2].replace(' ', '').split(',') : match[2]);
-		}
-		return new this(transform);
 	}
 }
 
