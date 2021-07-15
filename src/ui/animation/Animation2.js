@@ -3,6 +3,7 @@
  * @imports
  */
 import AnimationAPI from './AnimationAPI.js';
+import _internals from '@webqit/util/js/internals.js';
 
 /**
  * ---------------------------
@@ -24,7 +25,6 @@ export default class Animation2 extends AnimationAPI {
 	 */
 	constructor(el, callback, params = {}) {
 		super(el, callback, params);
-		var sym = Symbol.for('play-js-ani2');
 		// -----------------------------
 		// The state...
 		// -----------------------------
@@ -49,10 +49,10 @@ export default class Animation2 extends AnimationAPI {
 					this.endDelay = Math.max(0, Math.min(endDelay, this.currentTime >= totalTiming ? 0 : totalTiming - this.currentTime));
 				},
 				start(callback) {
-					if (_this.$.anim.el[sym]) {
-						_this.$.anim.el[sym].finish();
+					if (_internals(_this.$.anim.el, 'play-ui').has('anim')) {
+						_internals(_this.$.anim.el, 'play-ui').get('anim').finish();
 					}
-					_this.$.anim.el[sym] = _this.$.anim;
+					_internals(_this.$.anim.el, 'play-ui').get('anim', _this.$.anim);
 					// ---------------
 					this.state = 'playing';
 					this.calculate();

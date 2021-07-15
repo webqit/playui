@@ -32,10 +32,11 @@ export default class Listeners extends Firebase {
 		this.handlersList = {};
 		this.hammertime = () => {
 			if (!this.hmm) {
-				if (!WebQit.DOM.window.Hammer) {
-					throw new Error('The Hammerjs library is needed to use gestures.');
+				if (typeof window === 'undefined' || !window.Hammer) {
+					console.error('The Hammerjs library is needed to use gestures.');
+					return;				
 				}
-				this.hmm == new WebQit.DOM.window.Hammer.Manager(this.subject);
+				this.hmm == new window.Hammer.Manager(this.subject);
 			}
 			return this.hmm;
 		};
@@ -54,6 +55,7 @@ export default class Listeners extends Firebase {
 		if (this.handlersList[TYPE]) {
 			return;
 		}
+		var hammertime;
 		if (CustomEvents[TYPE]) {
 			if (_isString(CustomEvents[TYPE])) {
 				// >> LINK THE ALIAS EVENT TO THIS FIREBASE
@@ -68,30 +70,34 @@ export default class Listeners extends Firebase {
 				if (!_isFunction(this.handlersList[TYPE].setup)) {
 					throw new Error('The "' + TYPE + '" event hook must implement a "setup" method!');
 				}
-				this.handlersList[TYPE].setup(this.subject, TYPE, e => {
-					this.fire({type:TYPE, e});
-				}, this.hammertime());
+				if (hammertime = this.hammertime()) {
+					this.handlersList[TYPE].setup(this.subject, TYPE, e => {
+						this.fire({type:TYPE, e});
+					}, hammertime);
+				}
 			} else {
 				throw new Error('The "' + TYPE + '" event hook must be either a string (alias) or a class!');
 			}
 		} else if (recognizeGesture(TYPE.split('+')[0])) {
 			// Lets work as if if always a list
-			var recognizers = TYPE.split('+').map(gestureName => {
-				var mainGestureName = recognizeGesture(gestureName);
-				var recognizer = this.hammertime().get(mainGestureName);
-				if (!recognizer) {
-					recognizer = new Hammer[_toTitle(mainGestureName)];
-					this.hammertime().add(recognizer);
-				}
-				return recognizer;
-			});
-			// From right to left, recognizeWith all others ahead
-			recognizers.forEach((recognizer, i) => {
-				recognizer.recognizeWith(recognizers.slice(i + 1));
-			});
-			// >> LINK THE HAMMER EVENT TO THIS FIREBASE
-			this.handlersList[TYPE] = e => this.fire({type:TYPE, e});
-			this.hammertime().on(TYPE.split('+').join(' '), this.handlersList[TYPE]);
+			if (hammertime = this.hammertime()) {
+				var recognizers = TYPE.split('+').map(gestureName => {
+					var mainGestureName = recognizeGesture(gestureName);
+					var recognizer = hammertime.get(mainGestureName);
+					if (!recognizer) {
+						recognizer = new Hammer[_toTitle(mainGestureName)];
+						hammertime.add(recognizer);
+					}
+					return recognizer;
+				});
+				// From right to left, recognizeWith all others ahead
+				recognizers.forEach((recognizer, i) => {
+					recognizer.recognizeWith(recognizers.slice(i + 1));
+				});
+				// >> LINK THE HAMMER EVENT TO THIS FIREBASE
+				this.handlersList[TYPE] = e => this.fire({type:TYPE, e});
+				hammertime.on(TYPE.split('+').join(' '), this.handlersList[TYPE]);
+			}
 		} else {
 			// >> LINK THE DOM EVENT TO THIS FIREBASE
 			this.handlersList[TYPE] = e => this.fire(e);
@@ -123,8 +129,8 @@ export default class Listeners extends Firebase {
 					throw new Error('The "' + TYPE + '" event hook must implement a "teardown" function!');
 				}
 			}
-		} else if (recognizeGesture(TYPE.split('+')[0])) {
-			this.hammertime().off(TYPE.split('+').join(' '), this.handlersList[TYPE]);
+		} else if ((hammertime = this.hammertime()) && recognizeGesture(TYPE.split('+')[0])) {
+			hammertime.off(TYPE.split('+').join(' '), this.handlersList[TYPE]);
 		} else {
 			// Native event
 			this.subject.removeEventListener(TYPE, this.handlersList[TYPE]);

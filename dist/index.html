@@ -1,6 +1,39 @@
 <html>
     <head>
         <script src="http://localhost:4000/play-ui/dist/main.js"></script>
+        <script src="http://localhost:4000/oohtml/dist/main.js"></script>
+        <template name="a">
+            <div>a</div>
+            <template name="a1">
+                <div>a1</div>
+            </template>
+        </template>
+        <template name="b">
+            <div exportgroup="b">b</div>
+            <template name="b1">
+                <div exportgroup="b1">b1</div>
+                <template name="b11">
+                    <div exportgroup="b11">b11</div>
+                </template>
+                <template name="b">
+                    <div exportgroup="b">b----1</div>
+                    <template name="b">
+                        <div exportgroup="b">b11----2</div>
+                        <template name="b">
+                            <div exportgroup="b">
+                                <import template=" ~ / a + b:deep()">b11----3</import>
+                            </div>
+                        </template>
+                    </template>
+                </template>
+            </template>
+        </template>
+        <template name="c">
+            <div>c</div>
+            <template name="c1">
+                <div>c1</div>
+            </template>
+        </template>
         <style>
             h1 {
                 color: blue;
@@ -10,9 +43,25 @@
             }
         </style>
     </head>
-    <body>
+    <body template="c1:deep()">
+        <import template="b/b1/b11" name="b:super()">-------</import>
+        <import template="b:having(b):deepest() + b:having(:b):deepest()" name="b">
+            <span>Default Content</span>
+            <template name="a">
+                <span>Default Content A</span>
+                <template name="b">
+                    <span>Default Content B</span>
+                    <template name="c">
+                        <span>Default Content C</span>
+                    </template>
+                </template>
+            </template>
+        </import>
         <h1 class="sss" style="height: 0px; background-color: yellow; overflow: hidden;">Hello world!</h1>
         <script>
+            setTimeout(() => {
+                console.log('>>', document.body.template.exports);
+            }, 10);
             WebQit.$.ui.on(document.body, 'eee', () => {
                 alert(22);
             });

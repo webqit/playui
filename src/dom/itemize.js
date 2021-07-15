@@ -11,7 +11,8 @@ import _following from '@webqit/util/arr/following.js';
 import _arrFrom from '@webqit/util/arr/from.js';
 import _arrMid from '@webqit/util/arr/mid.js';
 import _each from '@webqit/util/obj/each.js';
-import { getPlayUIGlobal, getPlayUIStub, getEls } from '../util.js';
+import { getPlayUIGlobal, getEls } from '../util.js';
+import _internals from '@webqit/util/js/internals.js';
 
 /**
  * Binds a (reactive) list context to the instance.
@@ -39,14 +40,14 @@ export default function itemize(els, items, params = {}) {
             // --------------
             var exports;
             if (itemExportId) {
-                exports = templateExportsObject[itemExportId];
+                exports = templateExportsObject.get(itemExportId);
             } else {
-                exports = templateExportsObject[key];
+                exports = templateExportsObject.get(key);
                 if (_isEmpty(exports) && _isNumeric(key)) {
-                    exports = templateExportsObject['#'];
+                    exports = templateExportsObject.get('#');
                 }
                 if (_isEmpty(exports)) {
-                    exports = templateExportsObject['default'];
+                    exports = templateExportsObject.get('default');
                 }
             }
             // --------------
@@ -94,7 +95,7 @@ export default function itemize(els, items, params = {}) {
     };
     const context = this;
     getEls.call(this, els).forEach(el => {
-        const previousBindings = getPlayUIStub(el).boundItems;
+        const previousBindings = _internals(el, 'play-ui').get('boundItems');
         if (previousBindings && previousBindings !== items) {
             childSelectorAll(el, '[' + itemIndexAttribute + ']').forEach(_el => _el.remove());
         }
@@ -124,7 +125,7 @@ export default function itemize(els, items, params = {}) {
                     }
                 });
             }, {tags: ['#playui-itemize', itemize, this]});
-            getPlayUIStub(el).boundItems = items;
+            _internals(el, 'play-ui').set('boundItems', items);
         }
         // -----------------
         if (params.overflowCallback) {

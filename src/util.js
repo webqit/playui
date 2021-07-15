@@ -47,26 +47,6 @@ export function getPlayUIGlobal(objectName) {
 }
 
 /**
- * Returns a PlayUI-specific object embedded on an element.
- *
- * @param Element element
- * 
- * @return Object
- */
-export function getPlayUIStub(element) {
-    var webqitStub, playUiStub, webqitStubSymbol = Symbol.for('.webqit');
-    if (!(webqitStub = element[webqitStubSymbol])) {
-        webqitStub = {};
-        Object.defineProperty(element, webqitStubSymbol, {value: webqitStub, enumerable: false});
-    }
-    if (!(playUiStub = webqitStub.playUi)) {
-        playUiStub = {};
-        webqitStub.playUi = playUiStub;
-    }
-    return playUiStub;
-}
-
-/**
  * Create a prototyper.
  *
  * @param object modules

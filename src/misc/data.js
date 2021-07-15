@@ -8,7 +8,8 @@ import _isObject from '@webqit/util/js/isObject.js';
 import _isUndefined from '@webqit/util/js/isUndefined.js';
 import _objFrom from '@webqit/util/obj/from.js';
 import _each from '@webqit/util/obj/each.js';
-import { getPlayUIStub, getEls } from '../util.js';
+import _internals from '@webqit/util/js/internals.js';
+import { getEls } from '../util.js';
 
 /**
  * Gets or sets custom data.
@@ -24,26 +25,23 @@ export default function(els, requestOrPayload, val = null) {
 	if (arguments.length === 1 || (
 		arguments.length === 2 && (_isString(requestOrPayload) || _isArray(requestOrPayload))
 	)) {
-		const playUiStub = getPlayUIStub(_els[0]);
-		if (!playUiStub.data) {
-			playUiStub.data = {};
-		}
+		const playUiStub = _internals(_els[0], 'play-ui', 'data');
 		// ------------------
 		// Retrieve single prop
 		if (_isString(requestOrPayload)) {
-			return playUiStub.data[requestOrPayload];
+			return playUiStub.get(requestOrPayload);
 		}
 		// ------------------
 		// Retrieve all props
 		if (arguments.length === 1) {
-			requestOrPayload = Object.keys(playUiStub.data);
+			requestOrPayload = playUiStub.keys();
 		}
 		// ------------------
 		// Retrieve listed props
 		if (_isArray(requestOrPayload)) {
 			var vals = {};
 			requestOrPayload.forEach(key => {
-				vals[key] = playUiStub.data[key];
+				vals[key] = playUiStub.get(key);
 			});
 			return vals;
 		}
@@ -54,20 +52,17 @@ export default function(els, requestOrPayload, val = null) {
 		payload = _objFrom(requestOrPayload, val);
 	}
 	_els.forEach(el => {
-		const playUiStub = getPlayUIStub(el);
-		if (!playUiStub.data) {
-			playUiStub.data = {};
-		}
+		const playUiStub = _internals(el, 'play-ui', 'data');
 		_each(payload, (key, val) => {
 			// ------------------
 			// Unset prop?
 			if (_isUndefined(val)) {
-				delete playUiStub.data[key];
+				playUiStub.delete(key);
 			}
 			// ------------------
 			// Set prop
 			else {
-				playUiStub.data[key] = val;
+				playUiStub.set(key, val);
 			}
 		});
 	});
