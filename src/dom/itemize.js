@@ -40,14 +40,14 @@ export default function itemize(els, items, params = {}) {
             // --------------
             var exports;
             if (itemExportId) {
-                exports = templateExportsObject.get(itemExportId);
+                exports = templateExportsObject[itemExportId];
             } else {
-                exports = templateExportsObject.get(key);
+                exports = templateExportsObject[key];
                 if (_isEmpty(exports) && _isNumeric(key)) {
-                    exports = templateExportsObject.get('#');
+                    exports = templateExportsObject['#'];
                 }
                 if (_isEmpty(exports)) {
-                    exports = templateExportsObject.get('default');
+                    exports = templateExportsObject['default'];
                 }
             }
             // --------------
