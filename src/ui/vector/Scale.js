@@ -3,12 +3,11 @@
  * @imports
  */
 import cssSync from '../../css/cssSync.js';
-import UIRect from './UIRect.js';
 
 /**
  * Scale UIRect.
  */
-export default class Scale extends UIRect {
+export default UIRect => class Scale extends UIRect { 
     
     /**
      * Manipulates an element's translate.translate to place it with another element.
@@ -71,23 +70,5 @@ export default class Scale extends UIRect {
             });
         }
        return $css;
-    }
-
-    /**
-     * Returns a new rect of rect1 scaled to rect2.
-     *
-     * @param UIRect|Element|Event|window 	source
-     * @param UIRect|Element|Event|window 	target
-     * @param object                     	params
-     *
-     * @return Scale
-     */
-    static calculate(source, target, params = {}) {
-        source = UIRect.calculate(source, params);
-        target = UIRect.calculate(target, params);
-        var $rect = {source, target, transformation: 'scale', ...source};
-        $rect.left -= (target.width - source.width) / 2;
-        $rect.top -= (target.height - source.height) / 2;
-        return new this($rect, params);
     }
 }

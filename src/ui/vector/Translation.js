@@ -11,7 +11,7 @@ import UIRect from './UIRect.js';
 /**
  * Translation UIRect.
  */
-export default class Translation extends UIRect {
+export default UIRect => class Translation extends UIRect { 
     
     /**
      * Manipulates an element's translate.translate to place it with another element.
@@ -95,59 +95,6 @@ export default class Translation extends UIRect {
         }
        return $css;
     }
-
-    /**
-     * Returns a new rect of source aligning with target.
-     *
-     * @param UIRect|Element|Event|window 	source
-     * @param UIRect|Element|Event|window 	target
-     * @param object                     	alignment
-     * @param Object                     	params
-     *
-     * @return this
-     */
-    static calculate(source, target, alignment = {}, params = {}) {
-        var intersection = UIRect.calculate(source, params).intersectionWith(target);
-        var alignment = {};
-        var $rect = {source, target, alignment, transformation: 'translation', ...intersection.source};
-        var length = {x:'width', y:'height'};
-        var start = {x:'left', y:'top'},
-            end = {x:'right', y:'bottom'};
-        ['x', 'y'].forEach(axis => {
-            if (params[axis] === false) {
-                return;
-            }
-            var sourceLength = intersection.source[length[axis]/*height*/];
-            // Distinguish and predicate
-            alignment[axis] = parseDirective(params[axis] || '');
-            switch(alignment[axis].keyword) {
-                case 'before':
-                    // Pull beyond start
-                    $rect[start[axis]/*top*/] = - (intersection[start[axis]/*top*/] + sourceLength);
-                break;
-                case 'after':
-                    // Push beyond end
-                    $rect[start[axis]/*top*/] = intersection[end[axis]/*bottom*/] + sourceLength;
-                break;
-                case 'start':
-                    // Pull to start
-                    $rect[start[axis]/*top*/] = - intersection[start[axis]/*top*/];
-                break;
-                case 'end':
-                    // Push to end
-                    $rect[start[axis]/*top*/] = intersection[end[axis]/*bottom*/];
-                break;
-                default:
-                    // Align to center
-                    $rect[start[axis]/*top*/] = intersection.delta[axis];
-            }
-            // Apply predicates
-            if (alignment[axis].predicates) {
-                $rect[start[axis]/*top*/] += evalDirectivePredicates(alignment[axis].predicates, sourceLength);
-            }
-        });
-        return new this($rect, params);
-    }
 }
 
 /**
@@ -167,7 +114,7 @@ function parseInset(el, anchors = ['left', 'top', 'right', 'bottom']) {
     var intersectionWithAnchor = null, rect;
     var getUIRect = () => {
         if (!rect) {
-            rect = UIRect.of(el);
+            rect = UIRect.calculate(el);
         }
         return rect;
     };
@@ -192,37 +139,4 @@ function parseInset(el, anchors = ['left', 'top', 'right', 'bottom']) {
 	});
 	delete currentOffsets.position;
 	return currentOffsets;
-}
-
-/** ------- */
-
-/**
- * Parses a directive to obtain a placement keyword and alignment.
- *
- * @param string			 	expr
- *
- * @return object
- */
-function parseDirective(expr) {
-    var regPlacement = new RegExp('(before|after|start|end|center)', 'g');
-    var regModifiers = new RegExp('[\-\+][0-9]+(%)?', 'g');
-    return {
-        keyword: (expr.match(regPlacement) || [])[0],
-        predicates: expr.match(regModifiers.replace(/ /g, '')),
-    };
-}
-
-/**
- * Sums a list of Mathematical expressions.
- *
- * @param array				 	alignment
- * @param number 				percentageContext
- *
- * @return number
- */
-function evalDirectivePredicates(alignment, percentageContext) {
-    return alignment.reduce((total, modifier) => total + (modifier.endsWith('%') 
-        ? parseFloat(modifier) / 100 * percentageContext
-        : parseFloat(modifier)
-    ), 0);
 }

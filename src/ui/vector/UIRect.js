@@ -3,14 +3,13 @@
  * @imports
  */
 import _isObject from '@webqit/util/js/isObject.js';
+import _isNumeric from '@webqit/util/js/isNumeric.js';
 import _any from '@webqit/util/arr/any.js';
-import Intersection from './Intersection.js';
-import Union from './Union.js';
-import Rotation from './Rotation.js';
-import Scale from './Scale.js';
-import Translation from './Translation.js';
 import Angle from './Angle.js';
 import Proximity from './Proximity.js';
+//import Rotation from './Rotation.js';
+//import Scale from './Scale.js';
+//import Translation from './Translation.js';
 
 /**
  * The UIRect class.
@@ -61,37 +60,11 @@ export default class UIRect {
             height: this.height,
         };
     }
-    
+
     /** --------- */
 
     /**
-     * @see intersectionWith().
-     *
-    * @param UIRect|Element|Event|window 	reference
-    * @param Object                     params
-     *
-     * @return Intersection
-     */
-    intersectionWith(reference, params = {}) {
-        return Intersection.calculate(this, reference, params);
-    }
-
-    /**
-     * @see unionWith().
-     *
-     * @param UIRect|Element|Event|window 	reference
-     * @param Object                        params
-     *
-     * @return Union
-     */
-    unionWith(reference, params = {}) {
-        return Union.calculate(this, reference, params = {});
-    }
-    
-    /** --------- */
-
-    /**
-     * @see calcAngle().
+     * Calculates the angle of two rects.
      *
      * @param UIRect|Element|Event|window 	reference
      * @param Object                        params
@@ -103,7 +76,7 @@ export default class UIRect {
     }
      
     /**
-     * @see calcProximity().
+     * Calculates the proximity of two rects.
      *
      * @param UIRect|Element|Event|window 	reference
      * @param string|array	                axis
@@ -119,40 +92,161 @@ export default class UIRect {
     /** --------- */
 
     /**
-     * @see rotationTo().
+     * Calculates the intersection of two rects.
      *
-     * @param UIRect|Element|Event|window 	reference
+    * @param UIRect|Element|Event|window 	operand
+    * @param Object                         params
+     *
+     * @return this
+     */
+    intersectionWith(operand, params = {}) {
+        var UIRect = this.constructor;
+        operand = UIRect.calculate(operand, params);
+        var $rect = {
+            left: this.left - operand.left,
+            top: this.top - operand.top,
+            right: (operand.left + operand.width) - (this.left + this.width),
+            bottom: (operand.top + operand.height) - (this.top + this.height),
+            geometry: 'intersection',
+        };
+        // More offsets
+        var leftline = Math.max(this.left, operand.left);
+        var rightline = Math.min(this.left + this.width, operand.left + operand.width);
+        var topline = Math.max(this.top, operand.top);
+        var bottomline = Math.min(this.top + this.height, operand.top + operand.height);
+        $rect.width = rightline > leftline ? rightline - leftline : 0;
+        $rect.height = bottomline > topline ? bottomline - topline : 0;
+        // The raw values
+        $rect.base = this;
+        $rect.operand = operand;
+        return new UIRect($rect, params);
+    }
+
+    /**
+     * Calculates the union of two rects.
+     *
+     * @param UIRect|Element|Event|window 	operand
+     * @param Object                        params
+     *
+     * @return Union
+     */
+    unionWith(operand, params = {}) {
+        var UIRect = this.constructor;
+        operand = UIRect.calculate(operand, params);
+        var $rect = {
+            left: Math.min(this.left, operand.left),
+            top: Math.min(this.top, operand.top),
+            right: Math.max((this.left + this.width), (operand.left + operand.width)),
+            bottom: Math.max((this.top + this.height), (operand.top + operand.height)),
+            geometry: 'union',
+        };
+        // More offsets
+        $rect.width = $rect.right - $rect.left;
+        $rect.height = $rect.bottom - $rect.top;
+        // The raw values
+        $rect.base = this;
+        $rect.operand = operand;
+        return new UIRect($rect, params);
+    }
+    
+    /** --------- */
+
+    /**
+     * Calculates the rotation to another rects.
+     *
+     * @param UIRect|Element|Event|window 	operand
      * @param Object                        params
      *
      * @return Rotation
      */
-    rotationTo(reference, origin = {}) {
-        return Rotation.calculate(this, reference, origin);
+    rotationTo(operand, params = {}) {
+        var $rect = {base: this, operand, transformation: 'rotation', ...this};
+        if (_isNumeric(operand)) {
+            $rect.angle = operand;
+        } else {
+            if (!(operand instanceof Angle)) {
+                operand  = this.angleWith(operand);
+            }
+            $rect.angle = operand.angleOfElevation;
+        }
+        // Centers of the two rects
+        //$rect.x = (rect2.left + (rect2.width / 2)) - (this.left + (this.width / 2));
+        //$rect.y = (rect2.top + (rect2.height / 2)) - (this.top + (this.height / 2));
+        // New coords
+        $rect.left = this.left * Math.cos(radians($rect.angle)) + this.top * -Math.sin(radians($rect.angle));
+        $rect.top = this.left * Math.sin(radians($rect.angle)) + this.top * Math.cos(radians($rect.angle));
+        var UIRect = this.constructor;
+        return new UIRect($rect, params);
     }
 
     /**
-     * @see scaleTo().
+     * Returns a new rect of rect1 scaled to rect2.
      *
-     * @param UIRect|Element|Event|window 	reference
-     * @param Object                        params
+     * @param UIRect|Element|Event|window 	operand
+     * @param object                     	params
      *
      * @return Scale
      */
-    scaleTo(reference, origin = {}) {
-        return Scale.calculate(this, reference, origin);
+    scaleTo(operand, params = {}) {
+        var UIRect = this.constructor;
+        operand = UIRect.calculate(operand, params);
+        var $rect = {base: this, operand, transformation: 'scale', ...this};
+        $rect.left -= (operand.width - this.width) / 2;
+        $rect.top -= (operand.height - this.height) / 2;
+        return new UIRect($rect, params);
     }
-     
+
     /**
-     * @see translationTo().
+     * Returns a new rect of base aligning with operand.
      *
-     * @param UIRect|Element|Event|window 	reference
-     * @param Object                  	    alignment
-     * @param Object                        params
+     * @param UIRect|Element|Event|window 	operand
+     * @param object                     	alignment
+     * @param Object                     	params
      *
-     * @return Translation
+     * @return this
      */
-    translationTo(reference, alignment = {}, params = {}) {
-        return Translation.calculate(this, reference, alignment, params);
+    translationTo(operand, alignment = {}, params = {}) {
+        var UIRect = this.constructor;
+        var intersection = this.intersectionWith(operand);
+        var alignment = {};
+        var $rect = {base: this, operand, alignment, transformation: 'translation', ...this};
+        var length = {x:'width', y:'height'};
+        var start = {x:'left', y:'top'},
+            end = {x:'right', y:'bottom'};
+        ['x', 'y'].forEach(axis => {
+            if (params[axis] === false) {
+                return;
+            }
+            var thisLength = this[length[axis]/*height*/];
+            // Distinguish and predicate
+            alignment[axis] = parseDirective(params[axis] || '');
+            switch(alignment[axis].keyword) {
+                case 'before':
+                    // Pull beyond start
+                    $rect[start[axis]/*top*/] = - (intersection[start[axis]/*top*/] + thisLength);
+                break;
+                case 'after':
+                    // Push beyond end
+                    $rect[start[axis]/*top*/] = intersection[end[axis]/*bottom*/] + thisLength;
+                break;
+                case 'start':
+                    // Pull to start
+                    $rect[start[axis]/*top*/] = - intersection[start[axis]/*top*/];
+                break;
+                case 'end':
+                    // Push to end
+                    $rect[start[axis]/*top*/] = intersection[end[axis]/*bottom*/];
+                break;
+                default:
+                    // Align to center
+                    $rect[start[axis]/*top*/] = intersection.delta[axis];
+            }
+            // Apply predicates
+            if (alignment[axis].predicates) {
+                $rect[start[axis]/*top*/] += evalDirectivePredicates(alignment[axis].predicates, thisLength);
+            }
+        });
+        return new UIRect($rect, params);
     }
 
     /**
@@ -164,16 +258,16 @@ export default class UIRect {
      * This function can calculate the rect of 3 different types of object:
      * - DOM element: offsets are calculated from el.getBoundingClientUIRect() and resolved relative to the specified params.offsetOrigin.
      *		width and height are calculated from el.getBoundingClientUIRect().
-    * - Event object: offsets are calculated as the event's (client|offset|page) x/y, depending on the specified params.offsetOrigin.
-    *		width and height are always 0, 0.
-    * - Window object: offsets are calculated as the current left/top scroll, as determined by the value of params.offsetOrigin.
-    *		width and height are always the window's inner width/height values.
-    *
-    * @param UIRect|Element|Event|window 	node
-    * @param object	 					params
-    *
-    * @return object
-    */
+     * - Event object: offsets are calculated as the event's (client|offset|page) x/y, depending on the specified params.offsetOrigin.
+     *		width and height are always 0, 0.
+     * - Window object: offsets are calculated as the current left/top scroll, as determined by the value of params.offsetOrigin.
+     *		width and height are always the window's inner width/height values.
+     *
+     * @param UIRect|Element|Event|window 	node
+     * @param object	 					params
+     *
+     * @return object
+     */
     static calculate(node, params = {}) {
         if (node instanceof UIRect) {
             return node;
@@ -218,7 +312,7 @@ export default class UIRect {
             $rect.right = $rect.left + $rect.width;
             $rect.bottom = $rect.top + $rect.height;
         } else if (node instanceof window.Element) {
-            $rect = node.getBoundingClientUIRect().toJSON();
+            $rect = node.getBoundingClientRect().toJSON();
             $rect.type = 'element';
             delete $rect.x;
             delete $rect.y;
@@ -266,4 +360,44 @@ export default class UIRect {
         }
         return new this($rect, params);
     }
+}
+
+/** ------- */
+
+/**
+ * @radians()
+ */
+function radians(deg) {
+    return deg * (Math.PI / 180);
+}
+
+/**
+ * Parses a directive to obtain a placement keyword and alignment.
+ *
+ * @param string			 	expr
+ *
+ * @return object
+ */
+function parseDirective(expr) {
+    var regPlacement = new RegExp('(before|after|start|end|center)', 'g');
+    var regModifiers = new RegExp('[\-\+][0-9]+(%)?', 'g');
+    return {
+        keyword: (expr.match(regPlacement) || [])[0],
+        predicates: expr.match(regModifiers.replace(/ /g, '')),
+    };
+}
+
+/**
+ * Sums a list of Mathematical expressions.
+ *
+ * @param array				 	alignment
+ * @param number 				percentageContext
+ *
+ * @return number
+ */
+function evalDirectivePredicates(alignment, percentageContext) {
+    return alignment.reduce((total, modifier) => total + (modifier.endsWith('%') 
+        ? parseFloat(modifier) / 100 * percentageContext
+        : parseFloat(modifier)
+    ), 0);
 }

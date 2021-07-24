@@ -3,7 +3,7 @@
  * @imports
  */
 import { getEls } from '../../util.js';
-import Rect from './UIRect.js';
+import UIRect from './UIRect.js';
 
 /**
  * Creates and plays an amiation.
@@ -14,7 +14,7 @@ import Rect from './UIRect.js';
  *
  * @return Rect
  */
-export default function vector(els, params = {}) {
+export default function rect(els, params = {}) {
 	var _el = getEls.call(this, els)[0];
-	return Rect.calculate(_el, {CNTXT: this, ...params});
-};
+	return UIRect.calculate(_el, {CNTXT: this, ...params});
+}

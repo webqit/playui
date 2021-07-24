@@ -118,9 +118,9 @@ export default function itemize(els, items, params = {}) {
                     if (_isArray(items) && entry.name === 'length') {
                         return;
                     }
-                    if (entry.type === 'del') {
+                    if (entry.type === 'deleteProperty') {
                         _del(el, entry.name, entry.oldValue);
-                    } else if (entry.type === 'set' || entry.type === 'def') {
+                    } else if (entry.type === 'set' || entry.type === 'defineProperty') {
                         _set(el, templateExportsObject, itemExportId, entry.name, entry.value, entry.isUpdate);
                     }
                 });

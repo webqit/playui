@@ -44,7 +44,7 @@
         </style>
     </head>
     <body template="c1:deep()">
-        <import template="b/b1/b11" name="b:super()">-------</import>
+        <import template="b/b1/b11" name="b:search()">-------</import>
         <import template="b:having(b):deepest() + b:having(:b):deepest()" name="b">
             <span>Default Content</span>
             <template name="a">
@@ -58,7 +58,16 @@
             </template>
         </import>
         <h1 class="sss" style="height: 0px; background-color: yellow; overflow: hidden;">Hello world!</h1>
+        <div class="rect1" style="position: absolute; top: 100px; left: 100px; width: 100px; height: 100px; background: red;"></div>
+        <div class="rect2" style="position: absolute; top: 150px; left: 150px; width: 100px; height: 100px; background: blue;"></div>
         <script>
+
+            var rect1 = WebQit.$('.rect1').toArray()[0];
+            var rect2 = WebQit.$('.rect2').toArray()[0];
+            console.log('unionWith()', WebQit.$(rect1).rect().unionWith(rect2));
+            console.log('intersectionWith()', WebQit.$(rect1).rect().intersectionWith(rect2));
+            console.log('angleWith()', WebQit.$(rect1).rect().angleWith(rect2));
+            console.log('proximityWith()', WebQit.$(rect1).rect().proximityWith(rect2));
             setTimeout(() => {
                 console.log('>>', document.body.template.exports);
             }, 10);

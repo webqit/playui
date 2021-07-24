@@ -10,6 +10,7 @@ import UIRect from './UIRect.js';
  * The Angle class
  * -----------
  */
+
 export default class Angle {
 
     /**
@@ -51,8 +52,8 @@ export default class Angle {
             $angle.angleOfElevation = Math.asin($angle.y / $angle.z);
         }
         $angle.angleOfDepression = 180 - 90 - $angle.angleOfElevation;
-        $angle.isHorizontal = angleOfElevation < 45;
-        $angle.isVertical = angleOfDepression < 45;
+        $angle.isHorizontal = $angle.angleOfElevation < 45;
+        $angle.isVertical = $angle.angleOfDepression < 45;
         return new this($angle, params);
     }
 }

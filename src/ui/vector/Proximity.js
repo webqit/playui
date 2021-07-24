@@ -32,12 +32,12 @@ export default class Proximity {
 	 * @param object		rect2
 	 * @param string|array	axis
 	 * @param object		previousProximity
-     * @param Object                     	params
+     * @param Object        params
 	 *
 	 * @return object
 	 */
-	static calculate(rect1, rect2, axis, previousProximity, param = {}) {
-		var $proximity = {intersection: UIRect.calculate(rect1, param).intersectionWith(rect2)};				
+	static calculate(rect1, rect2, axis, previousProximity, params = {}) {
+		var $proximity = {intersection: UIRect.calculate(rect1, params).intersectionWith(rect2)};				
 		$proximity.x = $proximity.x || {};
 		$proximity.y = $proximity.y || {};
 		previousProximity = _copy(previousProximity);
