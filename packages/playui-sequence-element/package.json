@@ -8,7 +8,7 @@
     "observer"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/docs/play-elements",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -28,11 +28,8 @@
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
   },
-  "publishConfig": {
-    "access": "public"
-  },
   "dependencies": {
-    "@webqit/playui-js": "^0.3.8",
+    "@webqit/playui-js": "^0.3.10",
     "@webqit/util": "^0.8.7"
   },
   "devDependencies": {
