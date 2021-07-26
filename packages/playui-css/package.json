@@ -8,7 +8,7 @@
     "play-ui"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/docs/getting-started/overview#play-ui-css",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -25,9 +25,6 @@
   "scripts": {
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "devDependencies": {
     "webpack": "^4.41.0",

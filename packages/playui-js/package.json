@@ -16,7 +16,7 @@
     "webcomponents"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/docs/getting-started/overview#play-ui-javascript",
-  "version": "0.3.8",
+  "version": "0.3.10",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -43,9 +43,6 @@
     "preversion": "npm run test && npm run build && git add -A dist",
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
-  },
-  "publishConfig": {
-    "access": "public"
   },
   "dependencies": {
     "@webqit/browser-pie": "^0.0.16",
