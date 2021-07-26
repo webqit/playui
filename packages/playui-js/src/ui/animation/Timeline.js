@@ -3,7 +3,7 @@
  * @imports
  */
 import { _isArray, _isFunction } from '@webqit/util/js/index.js';
-import { _remove, _from as _arrFrom } from '@webqit/util/arr/from.js';
+import { _remove, _from as _arrFrom } from '@webqit/util/arr/index.js';
 import AnimationAPI from './AnimationAPI.js';
 
 /**
