@@ -1,36 +1,23 @@
 {
-  "name": "@webqit/oohtml-cli",
-  "title": "OOHTML CLI",
-  "description": "OOHTML Command Line Interface.",
+  "name": "@webqit/play-ui",
+  "title": "Play UI",
+  "description": "Play UI development suite.",
   "keywords": [
     "OOHTML",
     "CLI"
   ],
-  "homepage": "https://webqit.io/tooling/oohtml-cli",
-  "version": "0.1.24",
+  "homepage": "https://webqit.io/tooling/play-ui",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/webqit/oohtml-cli.git"
+    "url": "git+https://github.com/webqit/play-ui.git"
   },
   "bugs": {
-    "url": "https://github.com/webqit/oohtml-cli/issues"
+    "url": "https://github.com/webqit/play-ui/issues"
   },
   "type": "module",
-  "main": "index.js",
-  "bin": {
-    "oohtml": "src/index.js"
-  },
   "scripts": {
-    "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
-  },
-  "dependencies": {
-    "@webqit/backpack": "0.0.3",
-    "@webqit/util": "^0.8.7",
-    "jsdom": "^16.4.0",
-    "showdown": "^1.9.1",
-    "showdown-highlight": "^2.1.8"
   },
   "author": "Oxford Harrison <oxharris.dev@gmail.com>",
   "maintainers": [
@@ -50,9 +37,9 @@
     "config": {
       "patreonUsername": "ox_harris",
       "githubUsername": "webqit",
-      "githubRepository": "oohtml-cli",
-      "githubSlug": "webqit/oohtml-cli",
-      "npmPackageName": "@webqit/oohtml-cli"
+      "githubRepository": "play-ui",
+      "githubSlug": "webqit/play-ui",
+      "npmPackageName": "@webqit/play-ui"
     }
   }
 }
