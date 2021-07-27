@@ -256,7 +256,8 @@ Command: *comming soon.*
 
 ## Next Steps
 
-[Full documentation](https://webqit.io/tooling/play-ui).
++ [Download Options](https://webqit.io/tooling/play-ui/docs/getting-started/download).
++ [Full documentation](https://webqit.io/tooling/play-ui).
 
 ## Issues
 
