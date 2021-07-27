@@ -41,5 +41,6 @@
       "githubSlug": "webqit/play-ui",
       "npmPackageName": "@webqit/play-ui"
     }
-  }
+  },
+  "version": "0.0.1"
 }
