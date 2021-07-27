@@ -1,0 +1,58 @@
+{
+  "name": "@webqit/oohtml-cli",
+  "title": "OOHTML CLI",
+  "description": "OOHTML Command Line Interface.",
+  "keywords": [
+    "OOHTML",
+    "CLI"
+  ],
+  "homepage": "https://webqit.io/tooling/oohtml-cli",
+  "version": "0.1.24",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webqit/oohtml-cli.git"
+  },
+  "bugs": {
+    "url": "https://github.com/webqit/oohtml-cli/issues"
+  },
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "oohtml": "src/index.js"
+  },
+  "scripts": {
+    "postversion": "npm publish",
+    "postpublish": "git push && git push --tags"
+  },
+  "dependencies": {
+    "@webqit/backpack": "0.0.3",
+    "@webqit/util": "^0.8.7",
+    "jsdom": "^16.4.0",
+    "showdown": "^1.9.1",
+    "showdown-highlight": "^2.1.8"
+  },
+  "author": "Oxford Harrison <oxharris.dev@gmail.com>",
+  "maintainers": [
+    "Oxford Harrison <oxharris.dev@gmail.com>"
+  ],
+  "contributors": [],
+  "funding": {
+    "type": "patreon",
+    "url": "https://patreon.com/ox_harris"
+  },
+  "badges": {
+    "list": [
+      "npmversion",
+      "npmdownloads",
+      "patreon"
+    ],
+    "config": {
+      "patreonUsername": "ox_harris",
+      "githubUsername": "webqit",
+      "githubRepository": "oohtml-cli",
+      "githubSlug": "webqit/oohtml-cli",
+      "npmPackageName": "@webqit/oohtml-cli"
+    }
+  }
+}

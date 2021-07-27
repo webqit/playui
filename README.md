@@ -1,6 +1,6 @@
 # Play UI
 
-Play UI is a family of tools that brings a *utility-based* approach and wholistic experience to UI development. This means: full UI authoring capabilities in the liberty and combinational power of standalone functionalities! Take an overview.
+Play UI is a family of tools that brings a *utility-based* approach and a wholistic experience to UI development. This means: full UI authoring capabilities in the liberty and combinational power of standalone functionalities! Take an overview.
 
 + [Play UI JavaScript](#play-ui-javascript)
 + [Play UI Command Line](#play-ui-command-line)
@@ -256,4 +256,12 @@ Command: *comming soon.*
 
 ## Next Steps
 
-The [download options](https://webqit.io/tooling/play-ui/docs/getting-started/download).
+[Full documentation](https://webqit.io/tooling/play-ui).
+
+## Issues
+
+To report bugs or request features, please submit an [issue](https://github.com/webqit/play-ui/issues).
+
+## License
+
+MIT.
