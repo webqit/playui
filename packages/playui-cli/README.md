@@ -6,4 +6,4 @@
 
 <!-- /BADGES -->
 
-(**[Part of Play UI](../../../../)**.) Play UI Command Line is a utility that lets you move certain aspects of UI authoring to a *build process*. It offers the automation that allows you to hand-author your UI in absolute free-form mode and then have everything automatically come to shape. And it's an experience at the command line you'll love! [Learn more](../../../../#play-ui-command-line).
+(**Part of the [Play UI](https://github.com/webqit/play-ui) suite**.) Play UI Command Line is a utility that lets you move certain aspects of UI authoring to a *build process*. It offers the automation that allows you to hand-author your UI in absolute free-form mode and then have everything automatically come to shape. And it's an experience at the command line you'll love! [Learn more](https://github.com/webqit/play-ui#play-ui-command-line).
