@@ -6,5 +6,5 @@
 
 <!-- /BADGES -->
 
-(**[Part of Play UI](../../../../)**.) Play UI JavaScript is a resilient, jQuery-inspired, DOM and UI abstraction library. It offers simple, but powerful, JavaScript functions that do a good job at interacting with the DOM and UI, following the most-performant way. And it's a succint API surface you'll love! ([`.html()`](https://webqit.io/tooling/play-ui/docs/api/dom/html), [`.play()`](https://webqit.io/tooling/play-ui/docs/api/ui/play), [`.on()`](https://webqit.io/tooling/play-ui/docs/api/ui/on), [`.off()`](https://webqit.io/tooling/play-ui/docs/api/ui/off), etc.)
-. [Learn more](../../../../play-ui-javascript).
+(**Part of the [Play UI](https://github.com/webqit/play-ui) suite**.) Play UI JavaScript is a resilient, jQuery-inspired, DOM and UI abstraction library. It offers simple, but powerful, JavaScript functions that do a good job at interacting with the DOM and UI, following the most-performant way. And it's a succint API surface you'll love! ([`.html()`](https://webqit.io/tooling/play-ui/docs/api/dom/html), [`.play()`](https://webqit.io/tooling/play-ui/docs/api/ui/play), [`.on()`](https://webqit.io/tooling/play-ui/docs/api/ui/on), [`.off()`](https://webqit.io/tooling/play-ui/docs/api/ui/off), etc.)
+. [Learn more](https://github.com/webqit/play-ui#play-ui-javascript).
