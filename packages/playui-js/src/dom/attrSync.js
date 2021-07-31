@@ -2,13 +2,12 @@
 /**
  * @imports
  */
+import {
+	_intersect, _exclude, _unique, _from as _arrFrom
+} from '@webqit/util/arr/index.js';
 import { _isString, _isArray, _isObject } from '@webqit/util/js/index.js';
 import { _each, _from as _objFrom } from '@webqit/util/obj/index.js';
 import { _toCamel } from '@webqit/util/str/index.js';
-import {
-	_difference, _intersect, _exclude,
-	_unique, _from as _arrFrom
-} from '@webqit/util/arr/index.js';
 import { getEls } from '../util.js';
 
 /**
@@ -17,12 +16,12 @@ import { getEls } from '../util.js';
  *
  * @param Array|Element			els
  * @param string|array|object	requestOrPayload
- * @param string|bool|void		valOrMutation
- * @param bool|void				subValMutation
+ * @param string|bool|void		valOrStateOrTokens
+ * @param bool|void				tokensState
  *
  * @return mixed
  */
-export default function(els, requestOrPayload, valOrMutation = null, subValMutation = null) {
+export default function(els, requestOrPayload, valOrStateOrTokens = null, tokensState = null) {
 	const _els = getEls.call(this, els);
 	if (arguments.length === 2) {
 		if (_isString(requestOrPayload)) {
@@ -36,34 +35,47 @@ export default function(els, requestOrPayload, valOrMutation = null, subValMutat
 			return vals;
 		}
 	}
-	var payload = requestOrPayload;
-	if (_isObject(payload)) {
-		subValMutation = valOrMutation;
+	var payload;
+	if (_isObject(requestOrPayload)) {
+		payload = requestOrPayload;
+	} else if (arguments.length === 4) {
+		payload = {[requestOrPayload]/* attr name */: {
+			[_arrFrom(valOrStateOrTokens).reduce((list, c) => list.concat(c.split(' ')), []).join(' ')]/* tokens */: tokensState/* tokens state */
+		}};
 	} else {
-		payload = _objFrom(requestOrPayload, valOrMutation);
+		// arguments.length === 3
+		payload = _arrFrom(requestOrPayload/* attr name(s) */).reduce((_payload, name) => (_payload[name] = valOrStateOrTokens, _payload), {});
 	}
 	_els.forEach(el => {
-		_each(payload, (name, valOrMutation) => {
-			if (arguments.length > 3 || (_isObject(requestOrPayload) && arguments.length > 2)) {
+		_each(payload, (name, valOrStateOrTokens) => {
+			if (_isObject(valOrStateOrTokens)) {
+				// Tokens Config
 				var currentVal = el.getAttribute(name);
 				var currentValArray = currentVal ? currentVal.split(' ').map(val => val.trim()).filter(a => a) : [];
 				// -----------------------
 				// Add or remove
 				// -----------------------
-				var values = _arrFrom(valOrMutation).reduce((list, c) => list.concat(c.split(' ')), []).map(a => a.trim()).filter(a => a);
-				if (!subValMutation && _intersect(currentValArray, values).length) {
-					// Add...
-					el.setAttribute(name, _exclude(currentValArray, ...values).join(' '));
-				} else if (subValMutation && _difference(values, currentValArray).length) {
-					// Remove...
-					el.setAttribute(name, _unique(currentValArray.concat(values)).join(' '));
+				var newValueArray = currentValArray;
+				_each(valOrStateOrTokens, (tokens, state) => {
+					tokens = tokens.split(' ').map(a => a.trim()).filter(a => a);
+					if (!state) {
+						newValueArray = _exclude(newValueArray, ...tokens);
+					} else {
+						newValueArray = _unique(newValueArray.concat(tokens));
+					}
+				});
+				if (!(newValueArray.length === currentValArray.length === _intersect(newValueArray, currentValArray).length)) {
+					el.setAttribute(name, newValueArray.join(' '));
 				}
+			} else if (valOrStateOrTokens === false) {
+				// State: false
+				el.removeAttribute(name);
+			} else if (valOrStateOrTokens === true) {
+				// State: true
+				el.setAttribute(name, 'true');
 			} else {
-				if (valOrMutation === false) {
-					el.removeAttribute(name);
-				} else {
-					el.setAttribute(name, valOrMutation === true ? 'true' : valOrMutation);
-				}
+				// Val
+				el.setAttribute(name, valOrStateOrTokens);
 			}
 		});
 	});
