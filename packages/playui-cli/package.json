@@ -7,7 +7,7 @@
     "CLI"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/docs/getting-started/overview#play-ui-command-line",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -26,7 +26,7 @@
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
-    "@webqit/backpack": "0.0.3",
+    "@webqit/backpack": "^0.0.34",
     "@webqit/util": "^0.8.7",
     "jsdom": "^16.4.0",
     "showdown": "^1.9.1",
