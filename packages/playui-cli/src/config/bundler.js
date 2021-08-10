@@ -5,7 +5,7 @@
 import Path from 'path';
 import { _merge } from '@webqit/util/obj/index.js';
 import { initialGetIndex } from '@webqit/backpack/src/cli/Promptx.js';
-import * as DotJson from '@webqit/backpack/src/dotfiles/DotJson.js';
+import { DotJson, anyExists } from '@webqit/backpack/src/dotfiles/index.js';
 
 /**
  * Reads BUNDLING from file.
@@ -15,8 +15,12 @@ import * as DotJson from '@webqit/backpack/src/dotfiles/DotJson.js';
  * 
  * @return object
  */
-export async function read(flags = {}, params = {}) {
-    const config = DotJson.read(Path.join(params.ROOT || '', './.webqit/playui-cli/config/bundler.json'));
+export async function read(flags = {}, layout = {}) {
+    const ext = flags.env ? `.${flags.env}` : '';
+    const configDir = Path.join(layout.ROOT || ``, `./.webqit/playui-cli/config/`);
+    const fileName = ext => `${configDir}/bundler${ext}.json`;
+    const availableExt = anyExists([ext, '', '.example'], fileName);
+    const config = availableExt === false ? {} : DotJson.read(fileName(availableExt));
     return _merge({
         ENTRY_DIR: './',
         OUTPUT_FILE: './bundle.html',
@@ -50,8 +54,11 @@ export async function read(flags = {}, params = {}) {
  * 
  * @return void
  */
-export async function write(data, flags = {}, params = {}) {
-    DotJson.write(data, Path.join(params.ROOT || '', './.webqit/playui-cli/config/bundler.json'));
+export async function write(config, flags = {}, layout = {}) {
+    const ext = flags.env ? `.${flags.env}` : '';
+    const configDir = Path.join(layout.ROOT || ``, `./.webqit/playui-cli/config/`);
+    const fileName = ext => `${configDir}/bundler${ext}.json`;
+    DotJson.write(config, fileName(ext));
 };
 
 /**
