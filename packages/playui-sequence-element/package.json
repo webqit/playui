@@ -1,13 +1,13 @@
 {
   "name": "@webqit/playui-sequence-element",
-  "title": "Play Sequence Element",
-  "description": "Play Sequence Element.",
+  "title": "Play UI Sequence Element",
+  "description": "Play UI Sequence Element.",
   "keywords": [
     "webmonetization",
     "play-components",
     "observer"
   ],
-  "homepage": "https://webqit.io/tooling/play-ui/docs/play-elements",
+  "homepage": "https://webqit.io/tooling/play-ui/docs/playui-elements",
   "version": "0.1.9",
   "license": "MIT",
   "repository": {
@@ -62,7 +62,7 @@
       "githubUsername": "webqit",
       "githubRepository": "play-ui",
       "githubSlug": "webqit/play-ui",
-      "npmPackageName": "@webqit/play-sequence"
+      "npmPackageName": "@webqit/playui-sequence-element"
     }
   }
 }
