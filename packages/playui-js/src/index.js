@@ -4,6 +4,7 @@
  */
 import * as css from './css/index.js';
 import * as dom from './dom/index.js';
+import * as data from './data/index.js';
 import * as misc from './misc/index.js';
 import * as ui from './ui/index.js';
 import { build } from './util.js';
@@ -13,6 +14,7 @@ export default function(params = {}) {
     return build({
         css,
         dom,
+        data,
         misc,
         ui,
     }, 1, this, params);
@@ -24,6 +26,7 @@ export default function(params = {}) {
  export {
      css,
      dom,
+     data,
      misc,
      ui,
  }

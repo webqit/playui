@@ -42,4 +42,4 @@ export {
     itemize,
     textAsync,
     textSync,
-};
+}
