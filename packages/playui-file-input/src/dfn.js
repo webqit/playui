@@ -17,37 +17,36 @@ export default function(window) {
             this._dataTransfer = new DataTransfer;
             // On-direct choosing
             this.addEventListener('change', e => {
-                if (this.data.dropArea) {
+                if (this.dataset.dropArea) {
                     this._addFiles(this.files, true);
                 }
             });
+            this._handlerDrag = (e) => {
+                if (e.type === 'dragover' || e.type === 'dragenter') {
+                    if (this.state) {
+                        this.state.dragging = true;
+                    }
+                } else if (e.type === 'dragleave' || e.type === 'dragend' || e.type === 'drop') {
+                    e.preventDefault();
+                    if (this.state) {
+                        this.state.dragging = false;
+                    }
+                    if (e.type === 'drop') {
+                        this._addFiles(e.dataTransfer.files);
+                    }
+                }
+            };
         }
 
         connectedCallback() {
-            if (this.data.dropArea) {
-                const dropArea = this.closest(this.data.dropArea);
+            if (this.dataset.dropArea) {
+                const dropArea = this.closest(this.dataset.dropArea);
                 // On drag-and-drop
                 [ 'drag', 'dragstart', 'dragend', 'dragover', 'dragenter', 'dragleave', 'drop' ].forEach(eventName => {
                     dropArea.removeEventListener(eventName, this._handlerDrag);
                     dropArea.addEventListener(eventName, this._handlerDrag);
                 });
 			}
-        }
-
-        _handlerDrag(e) {
-            if (e.type === 'dragover' || e.type === 'dragenter') {
-                if (this.state) {
-                    this.state.dragging = true;
-                }
-            } else if (e.type === 'dragleave' || e.type === 'dragend' || e.type === 'drop') {
-                e.preventDefault();
-                if (this.state) {
-                    this.state.dragging = false;
-                }
-                if (e.type === 'drop') {
-                    this._addFiles(e.dataTransfer.files);
-                }
-            }
         }
 
         _addFiles(files, isDirectSelection = false) {
