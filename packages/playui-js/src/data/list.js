@@ -91,7 +91,7 @@ export default function list(els, items, params = {}) {
             childSelectorAll(el, '[' + itemIndexAttribute + ']').forEach(_el => _el.remove());
         } else if (previousBindings) {
             _each(previousBindings, (key, data) => {
-                if (!(key in items)) {
+                if (!_isTypeObject(items) || !(key in items)) {
                     var itemEl = childSelector(el, '[' + itemIndexAttribute + '="' + key + '"]');
                     if (itemEl) itemEl.remove();
                 }
