@@ -16,7 +16,7 @@
     "webcomponents"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/docs/getting-started/overview#play-ui-javascript",
-  "version": "0.3.15",
+  "version": "0.3.16",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -31,11 +31,6 @@
     "fs": false
   },
   "main": "./src/index.js",
-  "files": [
-    "/dist",
-    "/src",
-    "/README.md"
-  ],
   "scripts": {
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
