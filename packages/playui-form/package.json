@@ -18,7 +18,6 @@
     "url": "https://github.com/webqit/play-ui/issues"
   },
   "type": "module",
-  "sideEffects": false,
   "browser": {
     "fs": false
   },
