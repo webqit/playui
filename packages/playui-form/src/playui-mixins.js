@@ -5,7 +5,7 @@
 import Observer from '@webqit/observer';
 import { _toTitle } from '@webqit/util/str/index.js';
 import { _from as _arrFrom, _intersect } from '@webqit/util/arr/index.js';
-import { _getType, _isBoolean, _isEmpty, _isTypeObject, _isArray, _isFunction, _isUndefined, _isObject } from '@webqit/util/js/index.js';
+import { _getType, _isBoolean, _isEmpty, _isTypeObject, _isArray, _isFunction, _isUndefined, _isNumeric, _isObject } from '@webqit/util/js/index.js';
 import { _isTextMediaType, _isFileUpload } from './utils/util.js';
 import * as Schemas from './schema-mixins.js';
 
@@ -13,6 +13,30 @@ import * as Schemas from './schema-mixins.js';
  * @Root Base Controller
  */
 export const _Root = __Root => class extends (__Root || class {}) {
+
+    constructor() {
+        super();
+        this.nodeRemovalListeners = new Map;
+    }
+
+    execNodeRemoval(node) {
+        if (_isFunction(node.remove)) {
+            node.remove();
+        }
+    }
+
+    onNodeRemoval(node, callback) {
+        var listeners = this.nodeRemovalListeners.get(node);
+        if (!listeners) {
+            listeners = [];
+            this.nodeRemovalListeners.set(node, listeners);
+        }
+        listeners.push(callback);
+    }
+
+    async remoteAction(method, url, options = {}) {
+        return {};
+    }
 
     static getSchemaName(type) {
         type = _arrFrom(type || 'string');
@@ -27,12 +51,15 @@ export const _Root = __Root => class extends (__Root || class {}) {
         ].reduce((name, pair) => name || (type.includes(pair[0]) ? pair[1] : null), null);
     }
 
-    setSchema(schema, parentWidget = null) {
+    setSchema(schema, ownerWidget = null) {
         Observer.set(this, 'schema', Observer.proxy(schema));
-        Observer.set(this, 'parentWidget', parentWidget);
+        Observer.set(this, 'ownerWidget', ownerWidget);
         Observer.set(this, 'attrs', Observer.proxy({
-            name: this.parentWidget && this.parentWidget.attrs.name ? `${this.parentWidget.attrs.name}[${this.schema.name}]` : this.schema.name
+            name: this.ownerWidget && this.ownerWidget.attrs.name ? `${this.ownerWidget.attrs.name}[${this.schema.name}]` : this.schema.name
         }));
+        if (!this.state) {
+            Observer.set(this, 'state', Observer.proxy({}));
+        }
         if (!this.schema.title) {
             this.schema.title = _toTitle(((this.schema.name || '') + '').replaceAll('_', ' '));
         }
@@ -47,6 +74,23 @@ export const _Root = __Root => class extends (__Root || class {}) {
         }
     }
 
+    alert(alert = null) {
+        if (arguments.length) {
+            this.state.alert = { message: alert.message, type: alert.type };
+        }
+        return { ...(this.state.alert || {}) };
+    }
+
+    json() {}
+
+    set value(value) {
+        this.json(value);
+    }
+
+    get value() {
+        return this.json();
+    }
+
 };
 
 /**
@@ -54,9 +98,7 @@ export const _Root = __Root => class extends (__Root || class {}) {
  */
 export const _ParentRoot = __ParentRoot => class extends _Root(__ParentRoot) {
 
-    deriveChildWidget(childSchema) {}
-
-    renderChildWidget(childWidget, childSchema, removeCallback = null) {}
+    deriveChildEntry(childSchema, i) {}
 
 };
 
@@ -64,31 +106,54 @@ export const _ParentRoot = __ParentRoot => class extends _Root(__ParentRoot) {
  * @Collection Controller
  */
 export const _Collection = __Collection => class extends _ParentRoot(__Collection) {
+
+    constructor() {
+        super();
+        Observer.set(this, 'childEntries', Observer.proxy({}));
+        Observer.observe(this.childEntries, mutations => {
+            mutations.forEach(m => {
+                if (m.type === 'set') {
+                    if (m.isUpdate && m.oldValue) {
+                        this.execNodeRemoval(m.oldValue);
+                    }
+                    if (m.value) {
+                        if (_isFunction(this.onNodeRemoval)) {
+                            this.onNodeRemoval(m.value, () => {
+                                if (this.childEntries[m.name] === m.value) {
+                                    delete this.childEntries[m.name];
+                                }
+                            });
+                        }
+                    } else {
+                        console.warn(`No widget type defined for entry "${m.name}" of schema type "${_arrFrom(this.schema.properties[m.name].type || 'string').join(', ')}".`);
+                    }
+                }
+                if (m.type === 'deleteProperty') {
+                    this.execNodeRemoval(m.oldValue);
+                }
+            });
+        });
+        // Better regex would allow you to not select the ${} characters. Try: /(?!\${)([^{}]*)(?=})/g
+        function renderString(str,obj) {
+            return str.replace(/\{.+?\}/g, match => {return index(obj,match)})
+        }
+    }
         
     static testSchema(jsonSchema) {
         return _arrFrom(jsonSchema.type).includes('object');
     }
 
-    setSchema(jsonSchema, parentWidget = null) {
-        super.setSchema(new (Schemas._Object())(jsonSchema), parentWidget);
-        Observer.set(this, 'entries', Observer.proxy({}));
+    setSchema(jsonSchema, ownerWidget = null) {
+        super.setSchema(new (Schemas._Object())(jsonSchema), ownerWidget);
+        Object.keys(this.childEntries).forEach(propertyName => {
+            delete this.childEntries[propertyName];
+        });
         Object.keys(this.schema.properties || {}).forEach(propertyName => {
             const propertySchema = this.schema.getPropertySchema(propertyName);
-            this.addResolvedEntry(propertyName, propertySchema);
-        });
-    }
-
-    addResolvedEntry(propertyName, propertySchema) {
-        const childWidget = this.renderChildWidget(this.deriveChildWidget(propertySchema), propertySchema, () => {
-            if (this.entries[propertyName] === childWidget)
-            delete this.entries[propertyName];
-        });
-        if (childWidget) {
-            this.entries[propertyName] = childWidget;
-        } else {
-            console.warn(`No widget type defined for entry "${propertyName}" of schema type "${_arrFrom(propertySchema.type || 'string').join(', ')}".`);
-        }
-        return childWidget;
+            if (propertySchema.display !== false) {
+                this.childEntries[propertyName] = this.deriveChildEntry(propertySchema, propertyName);
+            }
+        });        
     }
 
     extend(propertyName, callback = null) {
@@ -106,29 +171,56 @@ export const _Collection = __Collection => class extends _ParentRoot(__Collectio
             promptPropertyName();
         } else if (propertyName) {
             const instanceHint = this.json();
-            const propertySchema = this.schema.getPropertySchema(propertyName, instanceHint);
-            const childWidget = this.addResolvedEntry(propertyName, propertySchema);
+            this.childEntries[propertyName] = this.deriveChildEntry(this.schema.getPropertySchema(propertyName, instanceHint), propertyName);;
             if (callback) {
-                callback(childWidget);
+                callback(this.childEntries[propertyName]);
             }
         }
     }
 
-    json(data = {}) {
+    json(data = {}, autoExtend = false) {
         if (arguments.length) {
             if (!_isObject(data)) throw new Error(`Data must be a valid JSON object.`);
             Object.keys(data).forEach(name => {
-                if (!this.entries[name]) throw new Error(`Entry "${name}" not in collection.`);
-                this.entries[name].json(data[name]);
+                if (this.childEntries[name]) {
+                    this.childEntries[name].json(data[name]);
+                } else if (autoExtend) {
+                    this.extend(name, childEntry => {
+                        childEntry.json(data[name]);
+                    });
+                }
             });
             return;
         }
         // ------------------
         const _data = {};
-        Object.keys(this.entries).forEach(name => {
-            _data[name] = this.entries[name].json();
+        Object.keys(this.childEntries).forEach(name => {
+            _data[name] = this.childEntries[name].json();
         });
         return _data;
+    }
+
+    alert(alert = {}, autoExtend = false) {
+        if (arguments.length) {
+            super.alert(alert);
+            if (alert.details && !_isObject(alert.details)) throw new Error(`Alert details must be a valid JSON object.`);
+            Object.keys(alert.details || {}).forEach(name => {
+                if (this.childEntries[name]) {
+                    this.childEntries[name].alert(alert.details[name]);
+                } else if (autoExtend) {
+                    this.extend(name, childEntry => {
+                        childEntry.alert(alert.details[name]);
+                    });
+                }
+            });
+            return;
+        }
+        // ------------------
+        const _alert = super.alert(); _alert.details = {};
+        Object.keys(this.childEntries).forEach(name => {
+            _alert.details[name] = this.childEntries[name].alert();
+        });
+        return _alert;
     }
     
 };
@@ -137,18 +229,49 @@ export const _Collection = __Collection => class extends _ParentRoot(__Collectio
  * @Multiple Controller
  */
 export const _Multiple = __Multiple => class extends _ParentRoot(__Multiple) {
+
+    constructor() {
+        super();
+        Observer.set(this, 'childEntries', Observer.proxy([]));
+        Observer.observe(this.childEntries, mutations => {
+            mutations.forEach(m => {
+                if (m.name === 'length') return;
+                if (m.type === 'set') {
+                    if (m.isUpdate && m.oldValue && this.childEntries.indexOf(m.oldValue) === -1) {
+                        this.execNodeRemoval(m.oldValue);
+                    }
+                    if (m.value) {
+                        if (_isFunction(this.onNodeRemoval)) {
+                            this.onNodeRemoval(m.value, () => {
+                                const i = this.childEntries.indexOf(m.value);
+                                if (i > -1) {
+                                    this.childEntries.splice(i, 1);
+                                }
+                            });
+                        }
+                    } else {
+                        console.warn(`No widget type defined for entry "${m.name}" of schema type "${_arrFrom(m.value.type || 'string').join(', ')}".`);
+                    }
+                }
+                if (m.type === 'deleteProperty') {
+                    if (this.childEntries.indexOf(m.oldValue) === -1) {
+                        this.execNodeRemoval(m.oldValue);
+                    }
+                }
+            });
+        });
+    }
      
     static testSchema(jsonSchema) {
         return _arrFrom(jsonSchema.type).includes('array');
     }
 
-    setSchema(jsonSchema, parentWidget = null) {
-        super.setSchema(new (Schemas._Array())(jsonSchema), parentWidget);
-        Observer.set(this, 'entries', Observer.proxy([]));
+    setSchema(jsonSchema, ownerWidget = null) {
+        super.setSchema(new (Schemas._Array())(jsonSchema), ownerWidget);
+        this.childEntries.splice(0);
         if (!_isEmpty(this.schema.prefixItems)) {
-            this.schema.prefixItems.forEach(itemIndex => {
-                const itemSchema = this.schema.getItemSchema(itemIndex);
-                this.addResolvedEntry(itemIndex, itemSchema);
+            this.schema.prefixItems.forEach((itemSchema, itemIndex) => {
+                this.childEntries.push(this.deriveChildEntry(itemSchema, itemIndex));
             });
         }
         if (this.schema.autoExtend === true) {
@@ -156,40 +279,82 @@ export const _Multiple = __Multiple => class extends _ParentRoot(__Multiple) {
         }
     }
 
-    addResolvedEntry(itemIndex, itemSchema) {
-        const childWidget = this.renderChildWidget(this.deriveChildWidget(itemSchema), itemSchema, () => {
-            if (this.entries[itemIndex] === childWidget)
-            delete this.entries[itemIndex];
-        });
-        if (childWidget) {
-            this.entries[itemIndex] = childWidget;
-        } else {
-            console.warn(`No widget type defined for entry "${itemIndex}" of schema type "${_arrFrom(itemSchema.type || 'string').join(', ')}".`);
-        }
-        return childWidget;
-    }
-
     extend(callback = null) {
         const instanceHint = this.json();
         const itemIndex = instanceHint.length;
-        const itemSchema = this.schema.getItemSchema(itemIndex, instanceHint);
-        const childWidget = this.addResolvedEntry(itemIndex, itemSchema);
+        const childEntry = this.deriveChildEntry(this.schema.getItemSchema(itemIndex, instanceHint), itemIndex);
+        this.childEntries.push(childEntry);
         if (callback) {
-            callback(childWidget);
+            callback(childEntry);
         }
+    }
+
+    execNodeRemoval(node, confirm = null) {
+        if (!confirm) {
+            confirm = (msg, done) => done();
+        }
+        const i = this.childEntries.indexOf(node);
+        if (i === -1) {
+            return;
+        }
+        const name = !node.schema ? 'item' : (_isNumeric(node.schema.title) ? `item ${parseInt(node.schema.title) + 1}` : node.schema.title);
+        if (this.schema.remoteDelete) {
+            var value = node.value;
+            if (value && !_isTypeObject(value)) {
+                var deleteUrl = this.schema.remoteDelete.url.replace(/\{value\}/g, value);
+                confirm(`Remove ${name} (and delete from your account)?`, () => {
+                    return this.remoteAction(this.schema.remoteDelete.method || 'delete', deleteUrl).then(res => {
+                        if (res.ok) {
+                            super.execNodeRemoval(node);
+                        }
+                        return res;
+                    });
+                });
+                return;
+            }
+        }
+        confirm(`Remove ${name}?`, async () => {
+            super.execNodeRemoval(node);
+        });
     }
 
     json(data = []) {
         if (arguments.length) {
             if (!_isArray(data)) throw new Error(`Data must be a valid JSON array.`);
             data.forEach((value, itemIndex) => {
-                if (!this.entries[itemIndex]) throw new Error(`Entry "${itemIndex}" not in collection.`);
-                this.entries[itemIndex].json(value);
+                if (this.childEntries[itemIndex]) {
+                    this.childEntries[itemIndex].json(value);
+                } else {
+                    this.extend(childEntry => {
+                        childEntry.json(value);
+                    });
+                }
             });
             return;
         }
         // ------------------
-        return this.entries.filter(entry => entry).map(entry => entry.json());
+        return this.childEntries.filter(entry => entry).map(entry => entry.json());
+    }
+
+    alert(alert = {}, autoExtend = false) {
+        if (arguments.length) {
+            super.alert(alert);
+            if (alert.details && !_isArray(alert.details) && !Object.keys(alert.details).every(k => _isNumeric(k))) throw new Error(`Alert items must be a valid JSON array.`);
+            Object.keys(alert.details).forEach(itemIndex => {
+                const _alert = alert.details[itemIndex];
+                if (this.childEntries[itemIndex]) {
+                    this.childEntries[itemIndex].alert(_alert);
+                } else {
+                    this.extend(childEntry => {
+                        childEntry.alert(_alert);
+                    });
+                }
+            });
+            return;
+        }
+        const _alert = super.alert();
+        _alert.details = this.childEntries.filter(entry => entry).map(entry => entry.alert());
+        return _alert;
     }
 
 };
@@ -215,10 +380,10 @@ export const _Multiple2 = __Multiple2 => class extends _Multiple(__Multiple2) {
             if (_intersect(_arrFrom(jsonSchema.items.type), ['array', 'object']).length || Math.max(jsonSchema.items.minLength, jsonSchema.items.maxLength, 0) > widgetLineContentLengthLimit) return;
             entries = entries.concat(jsonSchema.items.enum || /* may not always be enum */[]);
         }
-        return !entries.some(item => _isTypeObject(item) || (item + '').length > widgetLineContentLengthLimit);
+        return !(entries.some(item => _isTypeObject(item) || (item + '').length > widgetLineContentLengthLimit));
     }
 
-    setSchema(jsonSchema, parentWidget = null) {
+    setSchema(jsonSchema, ownerWidget = null) {
         super.setSchema(...arguments);
         if (this.schema.autoExtend !== false) {
             this.extend();
@@ -232,6 +397,34 @@ export const _Multiple2 = __Multiple2 => class extends _Multiple(__Multiple2) {
  */
 export const _Enum = __Enum => class extends _Root(__Enum) {
 
+    constructor() {
+        super();
+        Observer.set(this, 'enumEntries', Observer.proxy([]));
+        Observer.observe(this.enumEntries, mutations => {
+            mutations.forEach(m => {
+                if (m.name === 'length') return;
+                if (m.type === 'set') {
+                    if (m.isUpdate && m.oldValue && this.enumEntries.indexOf(m.oldValue) === -1) {
+                        this.execNodeRemoval(m.oldValue);
+                    }
+                    if (_isFunction(this.onNodeRemoval)) {
+                        this.onNodeRemoval(m.value, () => {
+                            const i = this.enumEntries.indexOf(m.value);
+                            if (i > -1) {
+                                this.enumEntries.splice(i, 1);
+                            }
+                        });
+                    }
+                }
+                if (m.type === 'deleteProperty') {
+                    if (this.enumEntries.indexOf(m.oldValue) === -1) {
+                        this.execNodeRemoval(m.oldValue);
+                    }
+                }
+            });
+        });
+    }
+
     static testSchema(jsonSchema) {
         return _isArray(jsonSchema.enum) || (
             // Or where an array with the following conditions that completely eliminates the idea of a schema-based items list:
@@ -244,22 +437,46 @@ export const _Enum = __Enum => class extends _Root(__Enum) {
         );
     }
 
-    constructor() {
-        super();
-        Observer.set(this, 'entries', Observer.proxy([]));
-    }
-
-    setSchema(jsonSchema, parentWidget = null) {
+    setSchema(jsonSchema, ownerWidget = null) {
         // Enums can be any type
         const schemaName = this.constructor.getSchemaName(jsonSchema.type);
-        super.setSchema(new (Schemas[schemaName]())(jsonSchema), parentWidget);
+        this.enumEntries.splice(0);
+        super.setSchema(new (Schemas[schemaName]())(jsonSchema), ownerWidget);
+        // -------------
+        // Fetch items...
+        // -------------
+        const runSchemaEnum = (enumValues, enumNames) => {
+            const entries = enumValues.map((value, i) => ({ value, label: (enumNames || {})[i] }));
+            this.enumerate(entries, 1);
+        };
+        const runSchemaEnumFetch = remoteFetch => {
+            this.enumFetching = this.remoteAction(remoteFetch.method || 'get', remoteFetch.url, {
+                headers: { accept: 'application/json' }
+            }).then(res => res.ok ? res.json() : Promise.reject({ message: res.statusText })).then(res => {
+                var _entries = !_isArray(res.data) ? [] : res.data.map(entry => (_isObject(entry) ? {
+                    value: 'value' in entry ? entry.value : entry.id,
+                    label: 'label' in entry ? entry.label : entry.title,
+                } : {
+                    value: entry,
+                }));
+                this.enumerate(_entries, remoteFetch.url);
+            });
+        };
         // -------------
         // Mine items...
         // -------------
-        var entries = [];
-        if (this.schema.enum) {
-            entries = this.schema.enum.map((value, i) => ({ value, label: (this.schema.enumNames || {})[i] }));
+        if (this.schema.remoteFetch) {
+            runSchemaEnumFetch(this.schema.remoteFetch);
+            Observer.observe(this.schema, 'remoteFetch', () => {
+                runSchemaEnumFetch(this.schema.remoteFetch);
+            }, { subtree: true });
+        } else if (this.schema.enum) {
+            runSchemaEnum(this.schema.enum, this.schema.enumNames);
+            Observer.observe(this.schema, [['enum'], ['enumNames']], () => {
+                runSchemaEnum(this.schema.enum, this.schema.enumNames);
+            });
         } else if (_arrFrom(this.schema.type || 'string').includes('array')) {
+            const entries = [];
             // Array case 1:
             if (this.schema.prefixItems) {
                 entries = this.schema.prefixItems.map(item => (
@@ -278,30 +495,65 @@ export const _Enum = __Enum => class extends _Root(__Enum) {
             entries.forEach(item => {
                 item.selected = true;
             });
+            this.enumerate(entries, 2);
         }
+    }
+
+    deriveEnumEntry(enumData, index) {}
+
+    enumerate(entries, clearByTag = null) {
         if (_arrFrom(this.schema.type).includes('null')) {
-            entries = [{ value: null }].concat(entries);
+            entries = [{ value: null, label: this.attrs.placeholder }].concat(entries);
         }
-        // ------------------
-        entries.forEach((itemData, itemIndex) => {
-            const itemWidget = this.renderItemWidget(this.deriveItemWidget(itemData, itemIndex), itemData, itemIndex, () => {
-                if (this.entries[itemIndex] === itemWidget)
-                delete this.entries[itemIndex];
-            });
-            if (itemWidget) {
-                this.entries[itemIndex] = itemWidget;
+        if (clearByTag) {
+            if (clearByTag === true) {
+                this.enumEntries.splice(0);
+            } else {
+                this.enumEntries.filter(entry => _intersect(_arrFrom(entry.enumTag), _arrFrom(clearByTag)).length).forEach(entry => {
+                    const index = this.enumEntries.indexOf(entry);
+                    if (index > -1) {
+                        this.enumEntries.splice(index, 1);
+                    }
+                });
             }
-        });
+        }
+        this.enumEntries.push(...entries.map((entry, i) => {
+            entry = this.deriveEnumEntry(entry, i);
+            if (clearByTag) {
+                entry.enumTag = clearByTag;
+            }
+            return entry;
+        }));
     }
 
-    deriveItemWidget(entry, itemIndex) {}
-
-    renderItemWidget(enumItem, entry, itemIndex, removeCallback = null) {}
-
-    json(data = {}) {
-        if (arguments.length) return;
-        return this.attrs.multiple ? [] : null;
+    json(data = []) {
+        if (arguments.length) {
+            if (!_isArray(data)) {
+                if (this.attrs.multiple)
+                    throw new Error(`Data must be a valid JSON array.`);
+                data = [ data ];
+            }
+            const runSelect = () => {
+                this.enumEntries.forEach(entry => {
+                    entry.selected = false;
+                    data.forEach(value => {
+                        if (entry.value === value + '') {
+                            entry.selected = true;
+                        }
+                    });
+                });
+            };
+            if (this.enumFetching) {
+                this.enumFetching.then(runSelect);
+            } else {
+                runSelect();
+            }
+            return;
+        }
+        const selected = this.enumEntries.filter(entry => entry.selected).map(entry => entry.value);
+        return this.attrs.multiple ? selected : selected[0];
     }
+
 };
 
 /**
@@ -317,7 +569,7 @@ export const _Enum2 = __Enum2 => class extends _Enum(__Enum2) {
             // super.testSchema() plus nothing object-like, nor a string that execeeds widget line limit
             if (_intersect(_arrFrom(jsonSchema.type), ['array', 'object']).length || Math.max(jsonSchema.minLength, jsonSchema.maxLength, 0) > widgetLineContentLengthLimit) return;
             entries = jsonSchema.enum;
-        } else {
+        } else if (!jsonSchema.remoteFetch) {
             if (jsonSchema.prefixItems) {
                 // Only "const" or "single-item enum" - as ensured by super.testSchema(), plus, none should be object-like, nor a string that execeeds widget line limit
                 if (jsonSchema.prefixItems.some(item => _intersect(_arrFrom(item.type), ['array', 'object']).length || Math.max(item.minLength, item.maxLength, 0) > widgetLineContentLengthLimit)) return;
@@ -329,7 +581,7 @@ export const _Enum2 = __Enum2 => class extends _Enum(__Enum2) {
                 entries = entries.concat(jsonSchema.items.enum);
             }
         }
-        return !entries.some(item => _isTypeObject(item) || (item + '').length > widgetLineContentLengthLimit);
+        return !(entries.some(item => _isTypeObject(item) || (item + '').length > widgetLineContentLengthLimit));
     }
 
 }
@@ -338,6 +590,35 @@ export const _Enum2 = __Enum2 => class extends _Enum(__Enum2) {
  * @File Controller
  */
 export const _File = __File => class extends _Root(__File) {
+
+    constructor() {
+        super();
+        Observer.set(this, 'filesList', Observer.proxy([]));
+        Observer.set(this, 'fallbackFilesList', Observer.proxy([]));
+        Observer.observe(this.filesList, mutations => {
+            mutations.forEach(m => {
+                if (m.name === 'length') return;
+                if (m.type === 'set') {
+                    if (m.isUpdate && m.oldValue && this.filesList.indexOf(m.oldValue) === -1) {
+                        this.execNodeRemoval(m.oldValue);
+                    }
+                    if (_isFunction(this.onNodeRemoval)) {
+                        this.onNodeRemoval(m.value, () => {
+                            const i = this.filesList.indexOf(m.value);
+                            if (i > -1) {
+                                this.filesList.splice(i, 1);
+                            }
+                        });
+                    }
+                }
+                if (m.type === 'deleteProperty') {
+                    if (this.filesList.indexOf(m.oldValue) === -1) {
+                        this.execNodeRemoval(m.oldValue);
+                    }
+                }
+            });
+        });
+    }
 
     static testSchema(jsonSchema) {
         const _isFileSchema = _jsonSchema => {
@@ -349,29 +630,92 @@ export const _File = __File => class extends _Root(__File) {
         );
     }
 
-    constructor() {
-        super();
-        Observer.set(this, 'filesList', Observer.proxy([]));
-    }
-
-    setSchema(jsonSchema, parentWidget = null) {
+    setSchema(jsonSchema, ownerWidget = null) {
         const schemaType = _arrFrom(jsonSchema.type);
         const $schema = schemaType.includes('array') ? Schemas._Array() : Schemas._String();
-        super.setSchema(new $schema(jsonSchema), parentWidget);
+        super.setSchema(new $schema(jsonSchema), ownerWidget);
+        this.filesList.splice(0);
         this.attrs.type = 'file';
         if (schemaType.includes('array')) {
             this.attrs.name += '[]';
             this.attrs.multiple = true;
         }
+        if (this.schema.contentMediaType || (this.schema.items && this.schema.items.contentMediaType)) {
+            this.attrs.accept = this.schema.contentMediaType || this.schema.items.contentMediaType;
+        }
     }
 
-    deriveItemWidget(entry, itemIndex) {}
+    deriveFileEntry(fileData, key) {}
 
-    renderItemWidget(previewItem, entry, itemIndex) {}
+    populate(filesData, clearByTag = null) {
+        if (clearByTag) {
+            if (clearByTag === true) {
+                this.filesList.splice(0);
+            } else {
+                this.filesList.filter(entry => _intersect(_arrFrom(entry.enumTag), _arrFrom(clearByTag)).length).forEach(entry => {
+                    const index = this.filesList.indexOf(entry);
+                    if (index > -1) {
+                        // Don't remove just yet (; people are listening) until we figure out if this
+                        // should only be a transition to this.fallbackFilesList
+                        if (index > -1 && _intersect(_arrFrom(entry.enumTag), [ 1, 2 ]).length === 2) {
+                            this.fallbackFilesList.push(this.filesList[index]);
+                        }
+                        this.filesList.splice(index, 1); // Remove only now
+                    }
+                });
+            }
+        }
+        if ((!filesData || !filesData.length) && (!this.filesList.length || !this.filesList[0]) && this.fallbackFilesList.length) {
+            const _enumTag = this.fallbackFilesList[0].enumTag;
+            this.populate(this.fallbackFilesList.splice(0).map(_entry => ({ file: _entry.file })), _enumTag);
+        }
+        this.filesList.push(...filesData.map((fileData, i) => {
+            var entry = this.deriveFileEntry(fileData, i, clearByTag);
+            if (clearByTag !== null) {
+                entry.enumTag = clearByTag;
+            }
+            return entry;
+        }));
+    }
 
-    json(data = {}) {
-        if (arguments.length) return;
-        return this.attrs.multiple ? [] : null;
+    execNodeRemoval(node, confirm = null) {
+        if (!confirm) {
+            confirm = (msg, done) => done();
+        }
+        const name = 'file';
+        if (this.schema.remoteDelete && this.fallbackFilesList.indexOf(node) === -1) {
+
+            var value = node.file;
+            if (value && !_isTypeObject(value)) {
+                var deleteUrl = this.schema.remoteDelete.url.replace(/\{value\}/g, value);
+                confirm(`Remove ${name} (and delete from your account)?`, () => {
+                    return this.remoteAction(this.schema.remoteDelete.method || 'delete', deleteUrl).then(res => {
+                        if (res.ok) {
+                            super.execNodeRemoval(node);
+                        }
+                        return res;
+                    });
+                });
+                return;
+            }
+        }
+        confirm(`Remove ${name}?`, async () => {
+            super.execNodeRemoval(node);
+        });
+    }
+
+    json(files = []) {
+        if (arguments.length) {
+            if (!_isArray(files)) {
+                if (this.attrs.multiple)
+                    throw new Error(`Data must be a valid JSON array.`);
+                files = [ files ];
+            }
+            this.populate(files.filter(file => file).map(file => ({ file })), [ 1, 2 ]);
+            return;
+        }
+        const uploads = this.filesList.filter(entry => _isObject(entry.file)).map(entry => entry.file);
+        return this.attrs.multiple ? uploads : uploads[0];
     }
 
 };
@@ -381,10 +725,13 @@ export const _File = __File => class extends _Root(__File) {
  */
 export const _Input = __Input => class extends _Root(__Input) {
 
-    setSchema(jsonSchema, parentWidget = null) {
+    setSchema(jsonSchema, ownerWidget = null) {
         super.setSchema(...arguments);
         if (!_isUndefined(this.schema.default) || this.schema.examples) {
             this.attrs.placeholder = `E.g.: ${!_isUndefined(this.schema.default) ? this.schema.default : this.schema.examples[0]}`;
+        }
+        if ('const' in this.schema || (this.schema.enum || []).length === 1) {
+            this.attrs.value = 'const' in this.schema ? this.schema.const : this.schema.enum[0];
         }
     }
 
@@ -403,12 +750,12 @@ export const _Editor = __Editor => class extends _Input(__Editor) {
     static testSchema(jsonSchema) {
         const schemaType = _arrFrom(jsonSchema.type || 'string');
         return schemaType.includes('string') && ((jsonSchema.contentMediaType && _isTextMediaType(jsonSchema.contentMediaType)) || (
-            Math.max(jsonSchema.maxLength, jsonSchema.minLength) >= 1024
+            Math.max(jsonSchema.maxLength || 0, jsonSchema.minLength || 0) >= 1024
         ));
     }
 
-    setSchema(jsonSchema, parentWidget = null) {
-        super.setSchema(new (Schemas._String())(jsonSchema), parentWidget);
+    setSchema(jsonSchema, ownerWidget = null) {
+        super.setSchema(new (Schemas._String())(jsonSchema), ownerWidget);
     }
 
 };
@@ -422,8 +769,8 @@ export const _Text = __Text => class extends _Input(__Text) {
         return _arrFrom(jsonSchema.type || 'string').includes('string');
     }
 
-    setSchema(jsonSchema, parentWidget = null) {
-        super.setSchema(new (Schemas._String())(jsonSchema), parentWidget);
+    setSchema(jsonSchema, ownerWidget = null) {
+        super.setSchema(new (Schemas._String())(jsonSchema), ownerWidget);
         this.attrs.type = 'text';
         if (this.schema.format === 'date') {
             this.attrs.type = 'date';
@@ -479,8 +826,8 @@ export const _Number = __Number => class extends _Input(__Number) {
         return schemaType.includes('integer') || schemaType.includes('number');
     }
 
-    setSchema(jsonSchema, parentWidget = null) {
-        super.setSchema(new (Schemas._Number())(jsonSchema), parentWidget);
+    setSchema(jsonSchema, ownerWidget = null) {
+        super.setSchema(new (Schemas._Number())(jsonSchema), ownerWidget);
         this.attrs.type = 'number';
         if (this.schema.exclusiveMaximum) {
             this.attrs.max = this.schema.exclusiveMaximum - 0.0001;
@@ -516,8 +863,8 @@ export const _State = __State => class extends _Root(__State) {
         return _arrFrom(jsonSchema.type).includes('boolean');
     }
 
-    setSchema(jsonSchema, parentWidget = null) {
-        super.setSchema(new (Schemas._Boolean())(jsonSchema), parentWidget);
+    setSchema(jsonSchema, ownerWidget = null) {
+        super.setSchema(new (Schemas._Boolean())(jsonSchema), ownerWidget);
         this.attrs.type = 'checkbox';
         if (this.schema.const === true || this.schema.default === true) {
             this.attrs.checked = true;
@@ -530,3 +877,21 @@ export const _State = __State => class extends _Root(__State) {
     }
     
 };
+
+/**
+ * @Root Base Controller
+ */
+export const _ItemScope = __ItemScope => class extends (__ItemScope || class {}) {
+
+    setSchema(schema, ownerWidget = null) {
+        super.setSchema(...arguments);
+        const setItemIndex = () => {
+            if ((this.attrs.index || this.attrs.index === 0) && this.childEntries && this.schema.indexProperty && this.childEntries[this.schema.indexProperty]) {
+                this.childEntries[this.schema.indexProperty].json(this.attrs.index);
+            }
+        };
+        setItemIndex();
+        Observer.observe(this.attrs, 'index', setItemIndex);
+    }
+    
+}

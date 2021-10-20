@@ -3,7 +3,8 @@
  * @imports
  */
 import Observer from '@webqit/observer';
-import { _from as _arrFrom } from '@webqit/util/arr/index.js';
+import { _from as _arrFrom, _intersect } from '@webqit/util/arr/index.js';
+import { _isString, _isNumeric, _isTypeObject } from '@webqit/util/js/index.js';
 import { _toTitle } from '@webqit/util/str/index.js';
 import * as Roots from './playui-mixins.js';
 
@@ -19,6 +20,32 @@ import * as Roots from './playui-mixins.js';
  */
 export const _Root = __Root => class extends (__Root || HTMLElement) {
 
+    constructor() {
+        super();
+        const mutationObserver = new MutationObserver(entries => {
+            entries.forEach(entry => {
+                entry.removedNodes.forEach(node => {
+                    if (this.nodeRemovalListeners && this.nodeRemovalListeners.has(node)) {
+                        this.nodeRemovalListeners.get(node).forEach(callback => callback());
+                    }
+                });
+            });
+        });
+        mutationObserver.observe(this, { subtree: true, childList: true });
+    }
+
+    async remoteAction(method, url, options = {}) {
+        this.state.remoteAction = method;
+        this.state.remoteActionError = '';
+        return fetch(url, { headers: { accept: 'application/json' }, ...options, method }).then(res => {
+            this.state.remoteAction = false;
+            return res;
+        }).catch(e => {
+            this.state.remoteAction = false;
+            this.alert(e);
+        });
+    }
+
     static get subscriptBlocks() {
         return [ 'renderBasic', 'render' ];
     }
@@ -28,7 +55,13 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
         if (this.schema.title && this.namespace.title) {
             $(this.namespace.title).html(this.schema.title);
         }
-        if (this.schema.col) {
+        if (this.schema.description && this.namespace.description) {
+            $(this.namespace.description).html(this.schema.description);
+        }
+        if (this.schema.isRequired) {
+            $(this).attr('data-required', true);
+        }
+        if (this.schema.col && this.schema.col !== 12) {
             $(this).class({
                 ['col-' + this.schema.col]: true,
                 'col-12': false,
@@ -36,9 +69,29 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
         } else {
             $(this).class('col-12', true);
         }
+        if (this.schema.display === 'hidden') {
+            $(this).class('overflow-hidden wt-0 ht-0 pd-0 mg-0', true);
+        }
+        $(this).attr('data-remote-action', this.state.remoteAction || false);
+        $(this).attr('data-remote-action-error', this.state.remoteActionError || false);
+        var message = this.state.alert ? this.state.alert.message : '';
+        var type = this.state.alert ? this.state.alert.type : '';
+        if (this.namespace.alert) {
+            $(this.namespace.alert).html(message || '');
+            $(this.namespace.alert).attr('data-type', type || false);
+            if (message) {
+                this.namespace.alert.focus();
+            }
+        }
     }
 
     render() {}
+
+    alert() {
+        const ret = super.alert(...arguments);
+        this.renderBasic();
+        return ret;
+    }
 
 };
 
@@ -48,36 +101,40 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
  */
 export const _ParentRoot = __ParentRoot => class extends _Root(__ParentRoot) {
 
-    deriveChildWidget(childSchema) {
+    connectedCallback() {
+        super.connectedCallback();
+        if (this.namespace.adder) {
+            this.adderAction = this.adderAction || (() => this.extend());
+            this.namespace.adder.removeEventListener('click', this.adderAction);
+            this.namespace.adder.addEventListener('click', this.adderAction);
+        }
+    }
+
+    deriveChildEntry(childSchema, i) {
         if (!this.template) return;
-        return Reflect.ownKeys(this.template.exports).map(key => this.template.exports[key][0]).reduce((match, item) => {
+        var childEntry = Reflect.ownKeys(this.template.exports).map(key => this.template.exports[key][0]).reduce((match, item) => {
             if (match) return match;
             const constructor = item.hasAttribute('is') 
                 ? customElements.get(item.getAttribute('is'))
                 : customElements.get(item.localName);
             return constructor && constructor.testSchema(childSchema) ? item : null;
         }, null);
-    }
-    
-    renderChildWidget(childWidget, childSchema, disconnectedCallback = null) {
-        if (!childWidget) return;
-        // ------------
-        childWidget = childWidget.cloneNode(true);
-        if (this.namespace.content) {
-            this.namespace.content.append(childWidget);
-        } else {
-            this.append(childWidget);
+        if (childEntry) {
+            childEntry = childEntry.cloneNode(true);
+            if (this.namespace.content) {
+                this.namespace.content.append(childEntry);
+            } else {
+                this.append(childEntry);
+            }
+            // ------------
+            try {
+                childEntry.setSchema(childSchema, this);
+                (childEntry.attrs || {}).index = i;
+            } catch(e) {
+                console.warn(`Error calling element.setSchema();`, e, this);
+            }
         }
-        // ------------
-        try {
-            childWidget.setSchema(childSchema, this);
-        } catch(e) {
-            console.warn(`Error calling element.setSchema();`, e, this);
-        }
-        if (disconnectedCallback) {
-            //this.bindDisconnectedCallback(disconnectedCallback);
-        }
-        return childWidget;
+        return childEntry;
     }
 
 };
@@ -87,6 +144,13 @@ export const _ParentRoot = __ParentRoot => class extends _Root(__ParentRoot) {
  * @extends _ParentRoot() -> Roots._Collection() -> __Collection
  */
 export const _Collection = __Collection => class extends _ParentRoot(Roots._Collection(__Collection || HTMLElement)) {
+
+    get value() {
+        if (this.schema.primaryKey && this.childEntries[this.schema.primaryKey]) {
+            return this.childEntries[this.schema.primaryKey].json();
+        }
+    }
+    
 };
 
 /**
@@ -109,17 +173,27 @@ export const _Multiple = __Multiple => class extends _MultipleRoot(Roots._Multip
  */
 export const _Multiple2 = __Multiple2 => class extends _MultipleRoot(Roots._Multiple2(__Multiple2 || HTMLElement)) {
 
+    constructor() {
+        super();
+        this.addEventListener('keypress', e => {
+            if (e.key === 'Enter') {
+                this.extend(childEntry => childEntry.namespace.input ? childEntry.namespace.input.focus() : null);
+                e.preventDefault();
+            }
+        });
+    }
+
+    extend(callback = null) {
+        if (this.childEntries.length && !this.childEntries[this.childEntries.length - 1].namespace.input.value) {
+            return;
+        }
+        return super.extend(callback);
+    }
+
     render() {
         if (this.namespace.input && this.attrs.name) {
             $(this.namespace.input).attr(this.attrs);
         }
-    }
-
-    extend(callback = null) {
-        if (this.entries.length && !this.entries[this.entries.length - 1].namespace.input.value) {
-            return;
-        }
-        return super.extend(callback);
     }
 
 };
@@ -130,69 +204,34 @@ export const _Multiple2 = __Multiple2 => class extends _MultipleRoot(Roots._Mult
  */
 export const _EnumRoot = __EnumRoot => class extends _Root(__EnumRoot) {
 
-    deriveItemWidget(entry, itemIndex) {
-        if (!this.template) {
-            if (this.namespace.input instanceof HTMLSelectElement) {
-                return document.createElement('option');
-            }
-        }
-        return Reflect.ownKeys(this.template.exports).map(key => this.template.exports[key][0]).reduce((match, item) => {
-            if (match) return match;
-            const constructor = item.hasAttribute('is') 
-                ? customElements.get(item.getAttribute('is'))
-                : customElements.get(item.localName);
-            return constructor && constructor.testSchema(this.schema, entry) ? item : null;
-        }, null);
-    }
-    
-    renderItemWidget(enumWidget, entry, itemIndex, disconnectedCallback = null) {
-        if (!enumWidget) return;
-        // ------------
-        enumWidget = enumWidget.cloneNode(true);
-        if (this.namespace.input instanceof HTMLSelectElement) {
-            this.namespace.input.options.add(enumWidget);
-            enumWidget.setAttribute('label', entry.label || _toTitle(entry.value));
-            enumWidget.value = entry.value;
-            enumWidget.selected = entry.selected;
+    deriveEnumEntry(entry, i) {
+        var enumEntry;
+        if (!this.template && this.namespace.input instanceof HTMLSelectElement) {
+            enumEntry = document.createElement('option');
         } else {
-            this.namespace.input.append(enumWidget);
-            enumWidget.setAttribute('data-index', itemIndex);
+            var _enumEntry = Reflect.ownKeys(this.template.exports).map(key => this.template.exports[key][0]).reduce((match, item) => {
+                if (match) return match;
+                const constructor = item.hasAttribute('is') 
+                    ? customElements.get(item.getAttribute('is'))
+                    : customElements.get(item.localName);
+                return constructor && constructor.testSchema(this.schema, entry) ? item : null;
+            }, null);
+            if (_enumEntry) {
+                enumEntry = _enumEntry.cloneNode(true);
+            }
         }
-        // ------------
-        if (disconnectedCallback) {
-            //this.bindDisconnectedCallback(disconnectedCallback);
-        }
-        return enumWidget;
-    }
-
-    json(data = null) {
-        if (arguments.length) {
+        if (enumEntry) {
             if (this.namespace.input instanceof HTMLSelectElement) {
-                if (this.attrs.multiple) {
-                    if (!_isArray(data)) throw new Error(`Data must be a valid JSON array.`);
-                    Array.from(this.namespace.input.options).forEach(option => {
-                        option.selected = false;
-                        data.forEach(value => {
-                            if (option.value === value) {
-                                option.selected = true;
-                            }
-                        });
-                    });
-                } else {
-                    this.namespace.input.value = data;
-                }
-                return;
-            }
-            if (this.attrs.multiple) {
+                this.namespace.input.options.add(enumEntry);
+                enumEntry.setAttribute('label', entry.label || _toTitle(entry.value));
+                enumEntry.value = entry.value;
+                enumEntry.selected = entry.selected;
             } else {
+                this.namespace.input.append(enumEntry);
+                enumEntry.setAttribute('data-index', itemIndex);
             }
-            return;
         }
-        // ------------------
-        if (this.namespace.input instanceof HTMLSelectElement) {
-            return this.attrs.multiple ? this.namespace.input.selectedOptions : this.namespace.input.value;
-        }
-        return this.attrs.multiple ? [] : this.namespace.input.value;
+        return enumEntry;
     }
 
     render() {
@@ -223,29 +262,14 @@ export const _Enum2 = __Enum2 => class extends _EnumRoot(Roots._Enum2(__Enum2 ||
  */
 export const _File = __File => class extends _Root(Roots._File(__File || HTMLElement)) {
 
-    setSchema(jsonSchema, parentwidget = null) {
-        super.setSchema(...arguments);
-        const schemaType = _arrFrom(this.schema.type);
-        if (schemaType.includes('array')) {
-            this.attrs.name += '[]';
-        }
-    }
-
     constructor() {
         super();
-        this._dataTransfer = new DataTransfer;
-        Observer.observe(this.filesList, mutations => {
-            mutations.forEach(m => {
-                if (m.type === 'deleteProperty' && m.oldValue.previewElement) m.oldValue.previewElement.remove();
-                if (m.type === 'set' && m.isUpdate && m.oldValue && m.oldValue.previewElement) m.oldValue.previewElement.remove();
-            });
-        });
         // ------------------
         // On-direct choosing
         // ------------------
         this.addEventListener('change', e => {
             if (this.namespace.dropArea) {
-                this.addFiles(e.target.files, true);
+                this.populate(Array.from(e.target.files).map(file => ({ file })), 1);
             }
         });
         this._handlerDrag = e => {
@@ -259,10 +283,29 @@ export const _File = __File => class extends _Root(Roots._File(__File || HTMLEle
                     this.state.dragging = false;
                 }
                 if (e.type === 'drop') {
-                    this.addFiles(e.dataTransfer.files);
+                    this.populate(Array.from(e.dataTransfer.files).map(file => ({ file })));
                 }
             }
         };
+        Observer.observe(this.filesList, mutations => {
+            if (mutations[0].name === 'length' || !this.namespace.input) return;
+            const dataTransfer = new DataTransfer;
+            this.filesList.map(entry => entry.file).filter(file => !_isString(file)).forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            // Assign the files to the input element
+            this.namespace.input.files = dataTransfer.files;
+            // Still keep the "required" attribute?
+            if (this.schema.isRequired) {
+                if (!this.namespace.input.files.length && this.filesList.length && this.filesList[0]/* IMPORTANT: item 0 may be "undefined" */) {
+                    // Then there must be files added by link
+                    this.namespace.input.removeAttribute('required');
+                } else {
+                    // Restore
+                    this.namespace.input.setAttribute('required', true);
+                }
+            }
+        });
     }
 
     connectedCallback() {
@@ -276,44 +319,101 @@ export const _File = __File => class extends _Root(Roots._File(__File || HTMLEle
         }
     }
 
-    addFiles(files, isDirectSelection = false) {
-        const filesListAdd = file => {
-            if (!file) return;
-            const entry = { file, isDirectSelection, remove: () => {
-                this._dataTransfer.items.remove(file);
-                this.filesList.splice(this.filesList.indexOf(entry), 1);
-            } };
-            this._dataTransfer.items.add(file);
-            this.filesList.push(entry);
-            // -----------------------
-            const itemIndex = this.filesList.length - 1;
-            entry.previewElement = this.renderPreviewElement(this.derivePreviewElement(file, itemIndex), file, itemIndex, () => {
-                entry.remove();
-            });
-        };
-        if (this.schema.multiple) {
-            // Add new files each time
-            if (isDirectSelection) {
-                this.filesList
-                    .filter(entry => entry.isDirectSelection)
-                    .forEach(entry => entry.remove());
+    setSchema(jsonSchema, ownerWidget = null) {
+        super.setSchema(...arguments);
+        this.render();
+    }
+
+    deriveFileEntry(fileData, i, clearByTag = null) {
+        if (!this.template) return;
+        var childEntry = Reflect.ownKeys(this.template.exports).map(key => this.template.exports[key][0]).reduce((match, item) => {
+            if (match) return match;
+            const constructor = item.hasAttribute('is') 
+                ? customElements.get(item.getAttribute('is'))
+                : customElements.get(item.localName);
+            return constructor && constructor.testFile(fileData) ? item : null;
+        }, null);
+        if (childEntry) {
+            childEntry = childEntry.cloneNode(true);
+            childEntry.file = fileData._file || fileData.file;
+            if (_isString(fileData.file)) {
+                const defaultInput = document.createElement('input');
+                defaultInput.setAttribute('name', this.attrs.name);
+                defaultInput.setAttribute('value', fileData.file);
+                defaultInput.setAttribute('type', 'hidden');
+                childEntry.append(defaultInput);
+                childEntry.setAttribute('data-src', fileData.file);
+                if (_intersect(_arrFrom(clearByTag), [ 1, 2 ]).length === 2 && !this.schema.remoteDelete) {
+                    childEntry.setAttribute('data-isdefault', 'true');
+                }
             }
-            for (let i = 0; i < files.length; i++) {
-                filesListAdd(files[i]);
+            if (this.namespace.preview) {
+                this.namespace.preview.append(childEntry);
+            } else {
+                this.append(childEntry);
             }
-        } else {
-            // Clear existing
-            this._dataTransfer.items.clear();
-            this.filesList.splice(0);
-            filesListAdd(files[0]);
+            // ------------
+            try {
+                childEntry.previewFile(fileData.file, this);
+            } catch(e) {
+                console.warn(`Error calling element.previewFile();`, e, this);
+            }
         }
-        if (this.namespace.input) {
-            // Assign the files to the input element
-            this.namespace.input.files = this._dataTransfer.files;
+        return childEntry;
+    }
+
+    render() {
+        if (this.namespace.input && (this.attrs.type || this.attrs.name)) {
+            $(this.namespace.input).attr(this.attrs);
         }
     }
 
-    derivePreview(file) {
+};
+
+/**
+ * @FilePreview Element
+ * @extends __FilePreview
+ */
+export const _FilePreview = __FilePreview => class extends (__FilePreview || HTMLElement) {
+
+    connectedCallback() {
+        if (super.connectedCallback) {
+            super.connectedCallback();
+        }
+        if (this.namespace.deleter) {
+            this.deleterAction = this.deleterAction || (() => {
+                if (this.ownerWidget) {
+                    this.ownerWidget.execNodeRemoval(this, (msg, done) => {
+                        if (confirm(msg)) {
+                            $(this).attr('data-deleting', true);
+                            done().then(res => {
+                                $(this).attr('data-deleting', false);
+                                // This dry populate() should trigger restoration
+                                // of fallbackFiles. (See this.ownerWidget.populate())
+                                this.ownerWidget.populate([], [ 1, 2 ]);
+                            });
+                        }
+                    });
+                }
+            });
+            this.namespace.deleter.removeEventListener('click', this.deleterAction);
+            this.namespace.deleter.addEventListener('click', this.deleterAction);
+        }
+    }
+
+    static testFile(fileData) {
+        return true;
+    }
+
+    async previewFile(file, ownerWidget) {
+        this.ownerWidget = ownerWidget;
+        if (_isString(file)) {
+            const response = await fetch(file);
+            const data = response.ok ? await response.blob() : '';
+            file = new File([data], file.split('/').pop(), {
+                type: response.headers.get('content-type') || 'application/octet-stream',
+            });
+        }
         // Show thumnails
         var desc = `${file.name}: ${file.size / 1024}KB`;
         var revokeURL = el => window.URL.revokeObjectURL(el.src);
@@ -321,20 +421,22 @@ export const _File = __File => class extends _Root(Roots._File(__File || HTMLEle
             var img = document.createElement('img');
             img.onload = e => { revokeURL(img); };
             img.src = window.URL.createObjectURL(file);
-            return { el: img, type:'image', mime: file.type, desc, };
+            this.append(img);
+            return;
         }
         if (/^video\//.test(file.type)) {
             var media = document.createElement('video');
             media.onloadstart/*canplay*/ = e => { revokeURL(media); media.play(); };
             media.src = window.URL.createObjectURL(file);
             media.muted = true;
-            return { el: media, type: 'video', mime: file.type, desc, };
+            this.append(media);
+            return;
         }
         const el = document.createElement('i');
         el.classList.add('bi');
         var type = 'file';
         if (/^audio\//.test(file.type)) {
-            type = 'audio';
+            type = 'music';
         } else if (/msword|ms-word|wordprocessing/.test(file.type)) {
             type = 'word';
         } else if (/powerpoint|presentation/.test(file.type)) {
@@ -349,61 +451,11 @@ export const _File = __File => class extends _Root(Roots._File(__File || HTMLEle
             type = 'zip';
         }
         el.classList.add('bi-file-' + type);
-        return { el, type, mime: file.type, desc, };
+        this.append(el);
+        return;
     }
 
-    derivePreviewElement(file, itemIndex) {
-        if (!this.template) return;
-        return (this.template.exports.default || [])[0];
-    }    
-
-    renderPreviewElement(previewElement, file, itemIndex, disconnectedCallback = null) {
-        const previewData = this.derivePreview(file);
-        if (previewElement) {
-            previewElement = previewElement.cloneNode(true);
-            previewElement.append(previewData.el);
-        } else {
-            previewElement = previewData.el;
-        }
-        // ------------
-        if (this.namespace.preview) {
-            this.namespace.preview.append(previewElement);
-        } else {
-            this.append(previewElement);
-        }
-        // ------------
-        if (disconnectedCallback) {
-            //this.bindDisconnectedCallback(disconnectedCallback);
-        }
-        return previewElement;
-    }
-
-    json(data = null) {
-        if (arguments.length) {
-            this.filesList.forEach(entry => {
-                entry.remove();
-            });
-            if (this.attrs.multiple) {
-                if (!_isArray(data)) throw new Error(`Data must be a valid JSON array.`);
-            } else {
-                data = [ data ];
-            }
-            this.addFiles(data);
-            return;
-        }
-        // ------------------
-        return this.attrs.multiple 
-            ? this.namespace.input.files 
-            : this.namespace.input.files[0];
-    }
-
-    render() {
-        if (this.namespace.input && (this.attrs.type || this.attrs.name)) {
-            $(this.namespace.input).attr(this.attrs);
-        }
-    }
-
-};
+}
 
 /**
  * @Input Element
@@ -456,10 +508,40 @@ export const _State = __State => class extends _Input(Roots._State(__State || HT
 
     json(data = null) {
         if (arguments.length) {
-            this.namespace.input.value = data;
+            this.namespace.input.checked = data === true || data + '' === this.namespace.input.value;
             return;
         }
         return this.namespace.input.checked ? this.namespace.input.value : null;
+    }
+
+};
+
+/**
+ * @ItemScope Element
+ * @extends __ItemScope
+ */
+export const _ItemScope = __ItemScope => class extends Roots._ItemScope(__ItemScope || HTMLElement) {
+
+    connectedCallback() {
+        if (super.connectedCallback) {
+            super.connectedCallback();
+        }
+        if (this.namespace.deleter) {
+            this.deleterAction = this.deleterAction || (() => {
+                if (this.ownerWidget) {
+                    this.ownerWidget.execNodeRemoval(this, (msg, done) => {
+                        if (confirm(msg)) {
+                            $(this).attr('data-deleting', true);
+                            done().then(res => {
+                                $(this).attr('data-deleting', false);
+                            });
+                        }
+                    });
+                }
+            });
+            this.namespace.deleter.removeEventListener('click', this.deleterAction);
+            this.namespace.deleter.addEventListener('click', this.deleterAction);
+        }
     }
 
 };
