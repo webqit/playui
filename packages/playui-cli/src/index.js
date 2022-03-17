@@ -9,7 +9,7 @@ import parseArgs from '@webqit/backpack/src/cli/parseArgs.js';
 import { Promptx } from '@webqit/backpack/src/cli/Promptx.js';
 import * as DotJson from '@webqit/backpack/src/dotfiles/DotJson.js';
 import * as config from './config/index.js';
-import * as cmd from './cmd/index.js';
+import * as build from './build/index.js';
 
 // ------------------------------------------
 
@@ -23,7 +23,7 @@ const params = {
 
 const commands = {
     config: 'Configure an Play UI CLI command.',
-    bundle: cmd.bundler.desc.bundle,
+    bundle: build.oohtml.desc.bundle,
 };
 
 // ------------------------------------------
@@ -40,7 +40,7 @@ console.log('');
         // --------------------------
 
         case 'bundle':
-            cmd.bundler.bundle(Ui, flags, params);
+            build.oohtml.bundle(Ui, flags, params);
         break;
 
         // --------------------------

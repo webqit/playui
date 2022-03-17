@@ -4,139 +4,18 @@
  */
 import Fs from 'fs';
 import Path from 'path';
-import { _each, _merge } from '@webqit/util/obj/index.js';
-import { _isObject, _isNumeric, _isString, _isFunction } from '@webqit/util/js/index.js';
-import { _before, _beforeLast, _after, _toTitle } from '@webqit/util/str/index.js';
-import { _preceding, _following } from '@webqit/util/arr/index.js';
+import { _merge } from '@webqit/util/obj/index.js';
+import { _isFunction } from '@webqit/util/js/index.js';
+import { _before, _beforeLast, _after } from '@webqit/util/str/index.js';
 import Lexer from '@webqit/util/str/Lexer.js';
+import _Bundler from '../_Bundler.js';
 
 /**
  * ---------------------------
  * The Bundler class
  * ---------------------------
  */
-export default class Bundler {
-		
-	/**
-	 * Bundles and saves (multiple).
-	 *
-	 * @param string|object	from
-	 * @param string		to
-	 * @param object		params
-	 *
-	 * @return string|object
-	 */
-	static async bundle(from, to = null, params = {}) {
-
-		if (_isString(from) && from.includes('[name]')) {
-			if (Path.isAbsolute(to) && !to.matches(/\[name\]/)) {
-				throw new Error('Cannot bubdle from multiple ENTRY_DIRs to the same OUTPUT_FILE without a [name] placeholder.');
-			}
-			var _from = from;
-			from = {};
-			Fs.readdirSync(_before(_from, '[name]')).forEach(name => {
-				var resource = _from.replace(/\[name\]/g, name);
-				if (Fs.statSync(resource).isDirectory() && !(params.IGNORE_FOLDERS_BY_PREFIX || []).filter(prfx => name.substr(0, prfx.length) === prfx).length) {
-					from[name] = resource;
-				}
-			});
-		}
-
-		if (_isObject(from)) {
-			var fromNames = Object.keys(from), bundles = {};
-
-			var readShift = async () => {
-				var name;
-				if (!(name = fromNames.shift())) {
-					return;
-				}
-				var _to = (to || '').replace(/\[name\]/g, name);
-				var _params = { ...params };
-				_params.ENTRY_DIR = from[name];
-				_params.ASSETS_STORAGE_BASE = (params.ASSETS_STORAGE_BASE || '').replace(/\[name\]/g, name);
-				_params.ASSETS_PUBLIC_BASE = (params.ASSETS_PUBLIC_BASE || '').replace(/\[name\]/g, name);
-				var bundler = await Bundler.readdir(from[name], _params);
-				bundles[name] = bundler.output(_to, _params.ASSETS_STORAGE_BASE);
-				await readShift();
-			};
-			await readShift();
-
-			return bundles;
-		}
-
-		return (await Bundler.readdir(from, params)).output(to, params.ASSETS_STORAGE_BASE);
-	}
-
-	/**
-	 * Mounts a Bundler instance over a directory
-	 * and runs the directory-reading and files-loading process.
-	 *
-	 * @param string		baseDir
-	 * @param object		params
-	 *
-	 * @return void
-	 */
-	static async readdir(basePath, params) {
-		const bundler = new Bundler(basePath, params);
-		// --------------------------------
-		var load = async (resource, paramsCopy, errors, meta) => {
-			var callLoader = async function(index, resource, recieved) {
-				if (bundler.params.LOADERS && bundler.params.LOADERS[index]) {
-					var loader = bundler.params.LOADERS[index];
-					try {
-						return await loader.load(resource, paramsCopy, loader.args, recieved, meta, async (...args) => {
-							return await callLoader(index + 1, resource, ...args);
-						});
-					} catch(e) {
-						errors[resource] = e;
-					}
-				}
-				if (!recieved) {
-					return bundler.load(resource, params);
-				}
-				return recieved;
-			};
-			return await callLoader(0, resource);
-		};
-		// --------------------------------
-		var resources = Fs.readdirSync(bundler.baseDir);
-		var readShift = async () => {
-			var resourceName;
-			if (!(resourceName = resources.shift())) {
-				return;
-			}
-			let resource = Path.join(bundler.baseDir, resourceName);
-			var basename = resourceName;
-			if (Fs.statSync(resource).isDirectory()) {
-				if (!(bundler.params.IGNORE_FOLDERS_BY_PREFIX || []).filter(prfx => resourceName.substr(0, prfx.length) === prfx).length) {
-					var _params = {...bundler.params};
-					_params.indentation ++;
-					if (('SHOW_OUTLINE_NUMBERING' in bundler.params) && !bundler.params.SHOW_OUTLINE_NUMBERING && _isNumeric(_before(basename, '-'))) {
-						basename = _after(basename, '-');
-					}
-					bundler.outline[basename] = await Bundler.readdir(resource, _params);
-				}
-			} else {
-				var paramsCopy = {...bundler.params}, errors = {}, meta = {};
-				if (!bundler.params.loadStart || bundler.params.loadStart(resource, paramsCopy) !== false) {
-					var content = await load(resource, paramsCopy, errors, meta);
-					if (bundler.params.loadEnd) {
-						bundler.params.loadEnd(resource, paramsCopy, content, errors, meta);
-					}
-					basename = _beforeLast(basename, '.').toLowerCase();
-					bundler.outline[basename] = {
-						content,
-						errors,
-						meta,
-					};
-				}
-			}
-			await readShift();
-		};
-		await readShift();
-
-		return bundler;
-	}
+export default class Bundler extends _Bundler {
 		
 	/**
 	 * A Bundler instance.
@@ -147,13 +26,7 @@ export default class Bundler {
 	 * @return void
 	 */
 	constructor(baseDir, params = {}) {
-		if (!baseDir.endsWith('/')) {
-			baseDir += '/';
-		}
-		this.baseDir = baseDir;
-		this.params = params;
-		this.params.ASSETS_PUBLIC_BASE = this.params.ASSETS_PUBLIC_BASE || '/';
-		this.params.indentation = this.params.indentation || 0;
+		super(baseDir, params);
 		// ----------------------------------------
 		const divideByComment = tag => {
 			var _comment = '', _tag;
@@ -179,13 +52,25 @@ export default class Bundler {
 		};
 		this.params.defineAttribute = (tag, attributeName, attributeValue) => {
 			var [ comment, tag ] = divideByComment(tag);
+			if (!tag) {
+				return comment;
+			}
 			// --------------
-			var parts = Lexer.split(tag, '>', {limit: 1, blocks:[]});
+			var [tagEnd] = tag.split('').reduce(([a, quotes], char, i) => {
+				if (a) return [a];
+				if (["'", '"'].includes(char)) {
+					if (quotes[0] === char) quotes.splice(0);
+					else quotes.push(char);
+				} else if (!quotes.length && char === '>') {
+					return [i];
+				}
+				return [null, quotes];
+			}, [null, []]);
+			var parts = [tag.substring(0, tagEnd), tag.substring(tagEnd + 1)];
 			var isSelfClosingTag = parts[0].trim().endsWith('/');
 			return comment + (isSelfClosingTag ? _beforeLast(parts[0], '/') : parts[0]) + ' ' + attributeName + '="' + attributeValue + '"' + (isSelfClosingTag ? ' /' : '') +  '>' + parts[1];
 		};
 		// -----------------------------------------
-		this.outline = {};
 	}
 		
 	/**
@@ -308,6 +193,6 @@ Bundler.mime = {
 /**
  * @var function
  */
-const getPublicFilename = (filename, indentation) => {
+export const getPublicFilename = (filename, indentation) => {
 	return filename.replace(/\\/g, '/').split('/').slice(- (indentation + 1)).join('/');
 };

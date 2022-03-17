@@ -65,7 +65,7 @@ export default function(resource, params, args, recieved, meta, next) {
             var textContent = (node.textContent || '').trim();
             if (node.nodeType === 1/** ELEMENT_NODE */ && ['H1', 'H2', 'H3', 'H4', 'H5', 'H6'].includes(node.nodeName)) {
                 var level = parseInt(node.nodeName.substr(1)), 
-                    item = {level, title: textContent, uri: node.id, subtree: []};
+                    item = { level, title: textContent, uri: node.id, subtree: [] };
                 if (level === 1 || !outline.length) {
                     outline.push(item);
                 } else if (level > lastItem.level) {

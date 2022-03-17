@@ -6,8 +6,8 @@ import Fs from 'fs';
 import Url from 'url';
 import Path from 'path';
 import { _isString, _isObject, _isEmpty } from '@webqit/util/js/index.js';
-import Bundler from '../modules/bundler/Bundler.js';
-import * as bundler from '../config/bundler.js'
+import * as htmlmod from '../../config/oohtml.js';
+import Bundler from './Bundler.js';
 
 /**
  * @description
@@ -20,7 +20,7 @@ export const desc = {
  * @build
  */
 export async function bundle(Ui, flags = {}, params = {}) {
-	const config = await bundler.read(params);
+	const config = await htmlmod.read(params);
     Ui.title(`${'Creating HTML bundles'} ...`);
     Ui.info('');
     Ui.info(Ui.f`FROM: ${config.ENTRY_DIR}`);
@@ -49,7 +49,7 @@ export async function bundle(Ui, flags = {}, params = {}) {
 				// ---------------
 				var loaderUrl = loaderName;
 				if (isDefault) {
-					loaderUrl = Path.join(Path.dirname(import.meta.url), '/../modules/bundler/loaders', loaderName + '.js');
+					loaderUrl = Path.join(Path.dirname(import.meta.url), '/loaders', loaderName + '.js');
 				}
 				var imported;
 				if (Fs.existsSync(Url.fileURLToPath(loaderUrl)) && (imported = await import(loaderUrl)) && imported.default) {
@@ -106,4 +106,4 @@ export async function bundle(Ui, flags = {}, params = {}) {
 
 	Ui.info('');
     Ui.info(Ui.f`${total} total files bundled.`);
-};
+}
