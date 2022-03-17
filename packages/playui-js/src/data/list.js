@@ -25,6 +25,9 @@ export default function list(els, items, params = {}) {
     const OOHTML = getPlayUIGlobal.call(this, 'OOHTML');
     const itemIndexAttribute = params.itemIndexAttribute || 'data-index';
     // -----------------
+    let fireCallback = ( callback, ...args ) => {
+        try { return callback( ...args );  } catch( e ) {}
+    };
     const _set = (el, templateExportsObject, itemExportId, key, itemData, isUpdate) => {
         var itemEl;
         if (isUpdate && el.children.length) {
@@ -60,7 +63,7 @@ export default function list(els, items, params = {}) {
             }
         }
         if (itemEl) {
-            if (!(_isFunction(params.renderCallback) && params.renderCallback('render', itemEl, itemData, key, isUpdate) === false)) {
+            if (!(_isFunction(params.renderCallback) && fireCallback(params.renderCallback, 'render', itemEl, itemData, key, isUpdate) === false)) {
                 if (_isTypeObject(itemData)) {
                     let setState = OOHTML.meta.get('api.setState');
                     itemEl[setState](itemData);
@@ -73,7 +76,7 @@ export default function list(els, items, params = {}) {
         var itemEl = childSelector(el, '[' + itemIndexAttribute + '="' + key + '"]');
         if (itemEl) {
             var rspns;
-            if (!(_isFunction(params.renderCallback) && params.renderCallback('unrender', itemEl, oldValue, key) === false)) {
+            if (!(_isFunction(params.renderCallback) && fireCallback(params.renderCallback, 'unrender', itemEl, oldValue, key) === false)) {
                 let clearState = OOHTML.meta.get('api.clearState');
                 itemEl[clearState]();
             }
@@ -127,12 +130,12 @@ export default function list(els, items, params = {}) {
         }
         // -----------------
         if (params.overflowCallback) {
-            var normalizationState, collapsed = new Map();
+            var normalizationState, collapsed = new Map;
             var reflow = async (contentRect = null, boundingRect = null, isRerun = false) => {
                 // ---------------
                 var uncollapsed = Object.values(items).filter(item => !collapsed.has(item));
                 if (!isRerun && _isFunction(params.overflowContainerCallback)) {
-                    var shouldContinue = await params.overflowContainerCallback(true, el, uncollapsed.length, collapsed.size);
+                    var shouldContinue = await fireCallback(params.overflowContainerCallback, true, el, uncollapsed.length, collapsed.size);
                     if (shouldContinue === false) {
                         return;
                     }
@@ -191,7 +194,7 @@ export default function list(els, items, params = {}) {
                             resolve();
                         }, true/* withPromise */);
                         // --------
-                        await params.overflowCallback('collapse', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
+                        await fireCallback(params.overflowCallback, 'collapse', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
                     } else {
                         normalizationState = null;
                     }
@@ -207,7 +210,7 @@ export default function list(els, items, params = {}) {
                         var allowance = currentContainerSize - currentElSize;
                         if (allowance >= collapsed.get(_item)/* collapsion_size */ && (_itemDetails = itemDetails(_item))) {
                             collapsed.delete(_item);
-                            await params.overflowCallback('restore', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
+                            await fireCallback(params.overflowCallback, 'restore', _itemDetails.el, _item, _itemDetails.key, collapsed.size);
                         } else {
                             normalizationState = null;
                         }
@@ -222,7 +225,7 @@ export default function list(els, items, params = {}) {
                 if (normalizationState) {
                     await reflow(null, null, true);
                 } else if (_isFunction(params.overflowContainerCallback)) {
-                    await params.overflowContainerCallback(false, el, uncollapsed.length, collapsed.size);
+                    await fireCallback(params.overflowContainerCallback, false, el, uncollapsed.length, collapsed.size);
                 }
             };
             // ---------------
@@ -232,7 +235,7 @@ export default function list(els, items, params = {}) {
             } : null), null);
             // ---------------
             var initialCall = true;
-            observeResize(window, params.parentalOverflowBounds !== false ? el.parentNode : el, rect => {
+            observeResize(window, el, params.parentalOverflowBounds !== false ? el.parentNode : el, rect => {
                 if (!initialCall && normalizationState) { return; }
                 initialCall = false;
                 reflow(null, rect);
@@ -271,21 +274,23 @@ export const childSelectorAll = (el, selector) => {
  * @return object
  */
 var sharedResizeObserver, callbacksList;
-function observeResize(window, el, callback) {
+function observeResize(window, referenceElement, boundsElement, callback) {
     if (!sharedResizeObserver) {
         if (!window.ResizeObserver) {
             return;
         }
-        callbacksList = new Map();
+        callbacksList = new Map;
         sharedResizeObserver = new window.ResizeObserver(entries => {
             entries.forEach(entry => {
-                callbacksList.get(entry.target)(entry.contentRect);
+                callbacksList.get(entry.target).forEach(callback => callback(entry.contentRect));
             });
         });
     }
-    var existing = callbacksList.get(el);
-    callbacksList.set(el, callback);
-    if (!existing) {
-        sharedResizeObserver.observe(el);
+    let callbackGroup = callbacksList.get(boundsElement);
+    if (!callbackGroup) {
+        sharedResizeObserver.observe(boundsElement);
+        callbackGroup = new Map;
+        callbacksList.set(boundsElement, callbackGroup);
     }
+    callbackGroup.set(referenceElement, callback);
 };
