@@ -57,7 +57,7 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
 
     renderBasic() {
         //if (typeof $ === 'undefined') return;
-        console.log('-------------------this.schema?.title', this, this.schema?.title);
+        console.log('-------------------this.schema?.title', this, this.schema);
         if (this.schema?.title && this.namespace.title) {
             $(this.namespace.title).html(this.schema.title);
         }
