@@ -51,6 +51,7 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
     }
 
     connectedCallback() {
+        super.connectedCallback();
         console.log('-------------------this', this);
         this.renderBasic();
         this.render();
