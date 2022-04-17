@@ -51,15 +51,13 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
     }
 
     connectedCallback() {
-        WebQit.Observer.observe(this, mus => {
-            console.log('-------------------', ...mus, this.schema?.title);
-        });
         this.renderBasic();
         this.render();
     }
 
     renderBasic() {
         //if (typeof $ === 'undefined') return;
+        console.log('-------------------this.schema?.title', this, this.schema?.title);
         if (this.schema?.title && this.namespace.title) {
             $(this.namespace.title).html(this.schema.title);
         }
