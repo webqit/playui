@@ -11,7 +11,7 @@ import * as WidgetElements from './playui-element-mixins.js';
  */
 const { SubscriptElement } = WebQit.OOHTML;
 
-const FormWidget = class extends SubscriptElement(WidgetElements._Collection(HTMLFormElement)) {};
+const FormWidget = class extends WidgetElements._Collection(SubscriptElement(HTMLFormElement)) {};
 customElements.define('playui-form-widget', FormWidget, { extends: 'form' });
 
 const CollectionWidget = class extends WidgetElements._Collection(SubscriptElement(HTMLFieldSetElement)) {};
