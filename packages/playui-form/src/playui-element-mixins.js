@@ -50,6 +50,11 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
         return [ 'renderBasic', 'render' ];
     }
 
+    connectedCallback() {
+        this.renderBasic();
+        this.render();
+    }
+
     renderBasic() {
         //if (typeof $ === 'undefined') return;
         if (this.schema.title && this.namespace.title) {
