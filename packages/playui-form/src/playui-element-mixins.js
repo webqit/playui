@@ -51,13 +51,14 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
     }
 
     connectedCallback() {
+        console.log('-------------------this', this);
         this.renderBasic();
         this.render();
     }
 
     renderBasic() {
         //if (typeof $ === 'undefined') return;
-        console.log('-------------------this.schema?.title', this, this.schema);
+        console.log('-------------------this.schema?.title', this.schema, this);
         if (this.schema?.title && this.namespace.title) {
             $(this.namespace.title).html(this.schema.title);
         }
