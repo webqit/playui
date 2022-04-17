@@ -51,7 +51,7 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
     }
 
     connectedCallback() {
-        Observer.observe(this, mus => {
+        WebQit.Observer.observe(this, mus => {
             console.log('-------------------', ...mus, this.schema?.title);
         });
         this.renderBasic();
