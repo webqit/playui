@@ -52,14 +52,12 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
 
     connectedCallback() {
         super.connectedCallback();
-        console.log('-------------------this', this);
         this.renderBasic();
         this.render();
     }
 
     renderBasic() {
         //if (typeof $ === 'undefined') return;
-        console.log('-------------------this.schema?.title', this.schema, this);
         if (this.schema?.title && this.namespace.title) {
             $(this.namespace.title).html(this.schema.title);
         }
@@ -134,7 +132,6 @@ export const _ParentRoot = __ParentRoot => class extends _Root(__ParentRoot) {
             } else {
                 this.append(childEntry);
             }
-            console.log('-------------------childEntry', childEntry, childSchema);
             // ------------
             try {
                 childEntry.define(childSchema, this);
