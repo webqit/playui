@@ -46,7 +46,7 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
         });
     }
 
-    static get subscriptBlocks() {
+    static get subscriptMethods() {
         return [ 'renderBasic', 'render' ];
     }
 
@@ -128,10 +128,10 @@ export const _ParentRoot = __ParentRoot => class extends _Root(__ParentRoot) {
             }
             // ------------
             try {
-                childEntry.setSchema(childSchema, this);
+                childEntry.define(childSchema, this);
                 (childEntry.attrs || {}).index = i;
             } catch(e) {
-                console.warn(`Error calling element.setSchema();`, e, this);
+                console.warn(`Error calling element.define();`, e, this);
             }
         }
         return childEntry;
@@ -319,8 +319,8 @@ export const _File = __File => class extends _Root(Roots._File(__File || HTMLEle
         }
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(...arguments);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(...arguments);
         this.render();
     }
 

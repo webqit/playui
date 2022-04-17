@@ -51,7 +51,7 @@ export const _Root = __Root => class extends (__Root || class {}) {
         ].reduce((name, pair) => name || (type.includes(pair[0]) ? pair[1] : null), null);
     }
 
-    setSchema(schema, ownerWidget = null) {
+    define(schema, ownerWidget = null) {
         Observer.set(this, 'schema', Observer.proxy(schema));
         Observer.set(this, 'ownerWidget', ownerWidget);
         Observer.set(this, 'attrs', Observer.proxy({
@@ -143,8 +143,8 @@ export const _Collection = __Collection => class extends _ParentRoot(__Collectio
         return _arrFrom(jsonSchema.type).includes('object');
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(new (Schemas._Object())(jsonSchema), ownerWidget);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(new (Schemas._Object())(jsonSchema), ownerWidget);
         Object.keys(this.childEntries).forEach(propertyName => {
             delete this.childEntries[propertyName];
         });
@@ -266,8 +266,8 @@ export const _Multiple = __Multiple => class extends _ParentRoot(__Multiple) {
         return _arrFrom(jsonSchema.type).includes('array');
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(new (Schemas._Array())(jsonSchema), ownerWidget);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(new (Schemas._Array())(jsonSchema), ownerWidget);
         this.childEntries.splice(0);
         if (!_isEmpty(this.schema.prefixItems)) {
             this.schema.prefixItems.forEach((itemSchema, itemIndex) => {
@@ -383,8 +383,8 @@ export const _Multiple2 = __Multiple2 => class extends _Multiple(__Multiple2) {
         return !(entries.some(item => _isTypeObject(item) || (item + '').length > widgetLineContentLengthLimit));
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(...arguments);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(...arguments);
         if (this.schema.autoExtend !== false) {
             this.extend();
         }
@@ -437,11 +437,11 @@ export const _Enum = __Enum => class extends _Root(__Enum) {
         );
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
+    define(jsonSchema, ownerWidget = null) {
         // Enums can be any type
         const schemaName = this.constructor.getSchemaName(jsonSchema.type);
         this.enumEntries.splice(0);
-        super.setSchema(new (Schemas[schemaName]())(jsonSchema), ownerWidget);
+        super.define(new (Schemas[schemaName]())(jsonSchema), ownerWidget);
         // -------------
         // Fetch items...
         // -------------
@@ -630,10 +630,10 @@ export const _File = __File => class extends _Root(__File) {
         );
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
+    define(jsonSchema, ownerWidget = null) {
         const schemaType = _arrFrom(jsonSchema.type);
         const $schema = schemaType.includes('array') ? Schemas._Array() : Schemas._String();
-        super.setSchema(new $schema(jsonSchema), ownerWidget);
+        super.define(new $schema(jsonSchema), ownerWidget);
         this.filesList.splice(0);
         this.attrs.type = 'file';
         if (schemaType.includes('array')) {
@@ -725,8 +725,8 @@ export const _File = __File => class extends _Root(__File) {
  */
 export const _Input = __Input => class extends _Root(__Input) {
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(...arguments);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(...arguments);
         if (!_isUndefined(this.schema.default) || this.schema.examples) {
             this.attrs.placeholder = `E.g.: ${!_isUndefined(this.schema.default) ? this.schema.default : this.schema.examples[0]}`;
         }
@@ -754,8 +754,8 @@ export const _Editor = __Editor => class extends _Input(__Editor) {
         ));
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(new (Schemas._String())(jsonSchema), ownerWidget);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(new (Schemas._String())(jsonSchema), ownerWidget);
     }
 
 };
@@ -769,8 +769,8 @@ export const _Text = __Text => class extends _Input(__Text) {
         return _arrFrom(jsonSchema.type || 'string').includes('string');
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(new (Schemas._String())(jsonSchema), ownerWidget);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(new (Schemas._String())(jsonSchema), ownerWidget);
         this.attrs.type = 'text';
         if (this.schema.format === 'date') {
             this.attrs.type = 'date';
@@ -826,8 +826,8 @@ export const _Number = __Number => class extends _Input(__Number) {
         return schemaType.includes('integer') || schemaType.includes('number');
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(new (Schemas._Number())(jsonSchema), ownerWidget);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(new (Schemas._Number())(jsonSchema), ownerWidget);
         this.attrs.type = 'number';
         if (this.schema.exclusiveMaximum) {
             this.attrs.max = this.schema.exclusiveMaximum - 0.0001;
@@ -863,8 +863,8 @@ export const _State = __State => class extends _Root(__State) {
         return _arrFrom(jsonSchema.type).includes('boolean');
     }
 
-    setSchema(jsonSchema, ownerWidget = null) {
-        super.setSchema(new (Schemas._Boolean())(jsonSchema), ownerWidget);
+    define(jsonSchema, ownerWidget = null) {
+        super.define(new (Schemas._Boolean())(jsonSchema), ownerWidget);
         this.attrs.type = 'checkbox';
         if (this.schema.const === true || this.schema.default === true) {
             this.attrs.checked = true;
@@ -883,8 +883,8 @@ export const _State = __State => class extends _Root(__State) {
  */
 export const _ItemScope = __ItemScope => class extends (__ItemScope || class {}) {
 
-    setSchema(schema, ownerWidget = null) {
-        super.setSchema(...arguments);
+    define(schema, ownerWidget = null) {
+        super.define(...arguments);
         const setItemIndex = () => {
             if ((this.attrs.index || this.attrs.index === 0) && this.childEntries && this.schema.indexProperty && this.childEntries[this.schema.indexProperty]) {
                 this.childEntries[this.schema.indexProperty].json(this.attrs.index);
