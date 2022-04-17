@@ -133,6 +133,7 @@ export const _ParentRoot = __ParentRoot => class extends _Root(__ParentRoot) {
             } else {
                 this.append(childEntry);
             }
+            console.log('-------------------childEntry', childEntry, childSchema);
             // ------------
             try {
                 childEntry.define(childSchema, this);
