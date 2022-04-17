@@ -51,15 +51,16 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
     }
 
     connectedCallback() {
+        Observer.observe(this, mus => {
+            console.log('-------------------', ...mus);
+        });
         this.renderBasic();
         this.render();
     }
 
     renderBasic() {
-        console.log('--------111');
         //if (typeof $ === 'undefined') return;
         if (this.schema?.title && this.namespace.title) {
-            console.log('--------222');
             $(this.namespace.title).html(this.schema.title);
         }
         if (this.schema?.description && this.namespace.description) {
