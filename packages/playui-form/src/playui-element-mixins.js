@@ -57,16 +57,16 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
 
     renderBasic() {
         //if (typeof $ === 'undefined') return;
-        if (this.schema.title && this.namespace.title) {
+        if (this.schema?.title && this.namespace.title) {
             $(this.namespace.title).html(this.schema.title);
         }
-        if (this.schema.description && this.namespace.description) {
+        if (this.schema?.description && this.namespace.description) {
             $(this.namespace.description).html(this.schema.description);
         }
-        if (this.schema.isRequired) {
+        if (this.schema?.isRequired) {
             $(this).attr('data-required', true);
         }
-        if (this.schema.col && this.schema.col !== 12) {
+        if (this.schema?.col && this.schema.col !== 12) {
             $(this).class({
                 ['col-' + this.schema.col]: true,
                 'col-12': false,
@@ -74,7 +74,7 @@ export const _Root = __Root => class extends (__Root || HTMLElement) {
         } else {
             $(this).class('col-12', true);
         }
-        if (this.schema.display === 'hidden') {
+        if (this.schema?.display === 'hidden') {
             $(this).class('overflow-hidden wt-0 ht-0 pd-0 mg-0', true);
         }
         $(this).attr('data-remote-action', this.state.remoteAction || false);
@@ -196,7 +196,7 @@ export const _Multiple2 = __Multiple2 => class extends _MultipleRoot(Roots._Mult
     }
 
     render() {
-        if (this.namespace.input && this.attrs.name) {
+        if (this.namespace.input && this.attrs?.name) {
             $(this.namespace.input).attr(this.attrs);
         }
     }
@@ -240,7 +240,7 @@ export const _EnumRoot = __EnumRoot => class extends _Root(__EnumRoot) {
     }
 
     render() {
-        if (this.namespace.input && this.attrs.name) {
+        if (this.namespace.input && this.attrs?.name) {
             $(this.namespace.input).attr(this.attrs);
         }
     }
@@ -368,7 +368,7 @@ export const _File = __File => class extends _Root(Roots._File(__File || HTMLEle
     }
 
     render() {
-        if (this.namespace.input && (this.attrs.type || this.attrs.name)) {
+        if (this.namespace.input && (this.attrs?.type || this.attrs?.name)) {
             $(this.namespace.input).attr(this.attrs);
         }
     }
@@ -477,7 +477,7 @@ export const _Input = __Input => class extends _Root(__Input) {
     }
 
     render() {
-        if (this.namespace.input && (this.attrs.type || this.attrs.name)) {
+        if (this.namespace.input && (this.attrs?.type || this.attrs?.name)) {
             $(this.namespace.input).attr(this.attrs);
         }
     }
