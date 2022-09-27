@@ -421,19 +421,23 @@ export const _FilePreview = __FilePreview => class extends (__FilePreview || HTM
             });
         }
         // Show thumnails
-        var desc = `${file.name}: ${file.size / 1024}KB`;
+        var desc = `${file.name}: ${file.size ? file.size / 1024 : file.size}KB`;
+        var createURL = file => {
+            try { return window.URL.createObjectURL(file); }
+            catch(e) { return '' };
+        };
         var revokeURL = el => window.URL.revokeObjectURL(el.src);
         if (/^image\//.test(file.type)) {
             var img = document.createElement('img');
             img.onload = e => { revokeURL(img); };
-            img.src = window.URL.createObjectURL(file);
+            img.src = createURL(file);
             this.append(img);
             return;
         }
         if (/^video\//.test(file.type)) {
             var media = document.createElement('video');
             media.onloadstart/*canplay*/ = e => { revokeURL(media); media.play(); };
-            media.src = window.URL.createObjectURL(file);
+            media.src = createURL(file);
             media.muted = true;
             this.append(media);
             return;
