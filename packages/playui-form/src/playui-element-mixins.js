@@ -420,6 +420,7 @@ export const _FilePreview = __FilePreview => class extends (__FilePreview || HTM
                 type: response.headers.get('content-type') || 'application/octet-stream',
             });
         }
+        if (!file.name) return;
         // Show thumnails
         var desc = `${file.name}: ${file.size ? file.size / 1024 : file.size}KB`;
         var createURL = file => {
