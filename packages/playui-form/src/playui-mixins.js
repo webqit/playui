@@ -5,7 +5,7 @@
 import Observer from '@webqit/observer';
 import { _toTitle } from '@webqit/util/str/index.js';
 import { _from as _arrFrom, _intersect } from '@webqit/util/arr/index.js';
-import { _getType, _isBoolean, _isEmpty, _isTypeObject, _isArray, _isFunction, _isUndefined, _isNumeric, _isObject } from '@webqit/util/js/index.js';
+import { _getType, _isBoolean, _isEmpty, _isTypeObject, _isArray, _isFunction, _isUndefined, _isNumeric, _isObject, _isString } from '@webqit/util/js/index.js';
 import { _isTextMediaType, _isFileUpload } from './utils/util.js';
 import * as Schemas from './schema-mixins.js';
 
@@ -476,7 +476,7 @@ export const _Enum = __Enum => class extends _Root(__Enum) {
                 runSchemaEnum(this.schema.enum, this.schema.enumNames);
             });
         } else if (_arrFrom(this.schema.type || 'string').includes('array')) {
-            const entries = [];
+            let entries = [];
             // Array case 1:
             if (this.schema.prefixItems) {
                 entries = this.schema.prefixItems.map(item => (
@@ -669,7 +669,7 @@ export const _File = __File => class extends _Root(__File) {
             const _enumTag = this.fallbackFilesList[0].enumTag;
             this.populate(this.fallbackFilesList.splice(0).map(_entry => ({ file: _entry.file })), _enumTag);
         }
-        this.filesList.push(...filesData.map((fileData, i) => {
+        this.filesList.push(...filesData.filter(fileData => _isString(fileData.file) || fileData.file.name).map((fileData, i) => {
             var entry = this.deriveFileEntry(fileData, i, clearByTag);
             if (clearByTag !== null) {
                 entry.enumTag = clearByTag;
@@ -707,8 +707,7 @@ export const _File = __File => class extends _Root(__File) {
     json(files = []) {
         if (arguments.length) {
             if (!_isArray(files)) {
-                if (this.attrs.multiple)
-                    throw new Error(`Data must be a valid JSON array.`);
+                if (this.attrs.multiple) throw new Error(`Data must be a valid JSON array.`);
                 files = [ files ];
             }
             this.populate(files.filter(file => file).map(file => ({ file })), [ 1, 2 ]);
