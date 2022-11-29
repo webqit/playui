@@ -129,10 +129,6 @@ export function readGlobal(els, props, params = {}) {
 			}, {}));
 		}
 	});
-	// Save
-	if (!stylesheetCache) {
-		stylesheetCache = {};
-	}
 	stylesheetCache[cacheKey] = allRules.slice();
 	stylesheetCache[cacheKey].el = _el;
 	if (params.all) {

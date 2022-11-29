@@ -3,7 +3,7 @@
  * @imports
  */
 import {
-	_intersect, _exclude, _unique, _from as _arrFrom
+	_intersect, _unique, _from as _arrFrom
 } from '@webqit/util/arr/index.js';
 import { _isString, _isArray, _isObject } from '@webqit/util/js/index.js';
 import { _each, _from as _objFrom } from '@webqit/util/obj/index.js';
@@ -59,7 +59,12 @@ export default function(els, requestOrPayload, valOrStateOrTokens = null, tokens
 				_each(valOrStateOrTokens, (tokens, state) => {
 					tokens = tokens.split(' ').map(a => a.trim()).filter(a => a);
 					if (!state) {
-						newValueArray = _exclude(newValueArray, ...tokens);
+						newValueArray = newValueArray.filter(t => {
+							for (let _t of tokens) {
+								if (t === _t || (_t.endsWith('-') && t.startsWith(_t))) return false;
+							}
+							return true;
+						});
 					} else {
 						newValueArray = _unique(newValueArray.concat(tokens));
 					}
@@ -73,7 +78,7 @@ export default function(els, requestOrPayload, valOrStateOrTokens = null, tokens
 			} else if (valOrStateOrTokens === true) {
 				// State: true
 				el.setAttribute(name, 'true');
-			} else {
+			} else { 
 				// Val
 				el.setAttribute(name, valOrStateOrTokens);
 			}
