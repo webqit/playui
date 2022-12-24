@@ -482,6 +482,9 @@ export const _Enum = __Enum => class extends _Root(__Enum) {
                 entries = this.schema.prefixItems.map(item => (
                     ('const' in item) ? { value: item.const, label: item.title } : { value: item.enum[0], label: item.title || (item.enumNames || [])[0] }
                 ));
+                entries.forEach(item => {
+                    item.selected = true;
+                });
             }
             // Array case 2:
             if (this.schema.items) {
@@ -492,9 +495,6 @@ export const _Enum = __Enum => class extends _Root(__Enum) {
             // Expecting type array means "multiple"
             this.attrs.multiple = true;
             this.attrs.name += '[]';
-            entries.forEach(item => {
-                item.selected = true;
-            });
             this.enumerate(entries, 2);
         }
     }
