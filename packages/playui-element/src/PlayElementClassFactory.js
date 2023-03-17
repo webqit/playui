@@ -5,7 +5,7 @@
 import { _isFunction, _isTypeObject, _isObject } from '@webqit/util/js/index.js';
 
 /**
- * @PlayElement
+ * @PlayElementClassFactory
  */
 export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observer ) => class extends HTMLElement {
 

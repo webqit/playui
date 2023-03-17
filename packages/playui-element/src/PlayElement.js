@@ -2,18 +2,14 @@
 /**
  * @imports
  */
-import Observer from '@webqit/observer';
-import SubscriptFunction from '@webqit/subscript/src/SubscriptFunction.js';
 import { PlayElementClassFactory } from './PlayElementClassFactory.js';
 
 /**
- * @PlayElement
+ * @PlayElementLite
  */
 export default function PlayElement( HTMLElement ) {
-    return PlayElementClassFactory( HTMLElement, SubscriptFunction, Observer );
-}
-
-export {
-    SubscriptFunction,
-    Observer,
+    if ( typeof self.wq !== 'object' ) throw new Error( `No "wq" object in context.` );
+    if ( typeof self.wq.SubscriptFunction !== 'function' ) throw new Error( `No "wq.SubscriptFunction" function in context.` );
+    if ( typeof self.wq.Observer !== 'object' ) throw new Error( `No "wq.Observer" object in context.` );
+    return PlayElementClassFactory( HTMLElement, window.wq.SubscriptFunction, window.wq.Observer );
 }

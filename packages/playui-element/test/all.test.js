@@ -4,7 +4,11 @@
  */
 import { expect } from 'chai';
 import { delay, createDocument } from '../../../test/index.js';
-import { PlayElement, Observer } from '../src/index.js';
+import { PlayElementClassFactory } from '../src/PlayElementClassFactory.js';
+import { SubscriptFunction } from '@webqit/subscript';
+import Observer from '@webqit/observer';
+
+const PlayElement = Element => PlayElementClassFactory( Element, SubscriptFunction, Observer );
 
 describe(`PlayElement`, function() {
 
