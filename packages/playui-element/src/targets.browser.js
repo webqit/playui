@@ -5,5 +5,5 @@
 import PlayElement from './PlayElement.js';
 
 // As globals
-if ( !self.wq ) { self.wq = {}; }
-self.wq.PlayElement = PlayElement;
+if ( !self.webqit ) { self.webqit = {}; }
+self.webqit.PlayElement = PlayElement;

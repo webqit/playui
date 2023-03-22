@@ -8,8 +8,8 @@ import { PlayElementClassFactory } from './PlayElementClassFactory.js';
  * @PlayElementLite
  */
 export default function PlayElement( HTMLElement ) {
-    if ( typeof self.wq !== 'object' ) throw new Error( `No "wq" object in context.` );
-    if ( typeof self.wq.SubscriptFunction !== 'function' ) throw new Error( `No "wq.SubscriptFunction" function in context.` );
-    if ( typeof self.wq.Observer !== 'object' ) throw new Error( `No "wq.Observer" object in context.` );
-    return PlayElementClassFactory( HTMLElement, window.wq.SubscriptFunction, window.wq.Observer );
+    if ( typeof self.webqit !== 'object' ) throw new Error( `No "webqit" object in context.` );
+    if ( typeof self.webqit.SubscriptFunction !== 'function' ) throw new Error( `No "webqit.SubscriptFunction" function in context.` );
+    if ( typeof self.webqit.Observer !== 'object' ) throw new Error( `No "webqit.Observer" object in context.` );
+    return PlayElementClassFactory( HTMLElement, window.webqit.SubscriptFunction, window.webqit.Observer );
 }
