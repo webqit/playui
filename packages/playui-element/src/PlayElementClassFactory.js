@@ -89,6 +89,7 @@ export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observe
             const getPaths = ( base, record_s ) => ( Array.isArray( record_s ) ? record_s : [ record_s ] ).map( record => [ ...base, ...( record.path || [ record.key ] ) ] );
             properties.processes = properties.dependencies.map( path => {
                 if ( _isTypeObject( _env[ path[ 0 ] ] ) ) {
+                    if ( path.length === 1 ) return;
                     return Observer.deep( _env[ path[ 0 ] ], path.slice( 1 ), Observer.observe, record_s => {
                         rerenderCallback( ...getPaths( [ path[ 0 ] ], record_s ) );
                     } );
@@ -102,7 +103,7 @@ export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observe
     
     static contractUnbind( properties ) {
         _await( properties, properties => {
-            properties?.processes.forEach( process => process.abort() );
+            properties?.processes.forEach( process => process?.abort() );
         } );
     }
 
