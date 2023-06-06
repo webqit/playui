@@ -6,7 +6,7 @@
     "webcomponents"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/docs/getting-started/overview#play-ui-element",
-  "version": "0.0.5",
+  "version": "0.0.7",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -30,7 +30,7 @@
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
-    "@webqit/observer": "^2.1.4",
+    "@webqit/observer": "^2.1.5",
     "@webqit/subscript": "^2.1.41",
     "@webqit/util": "^0.8.11"
   },

@@ -90,11 +90,11 @@ export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observe
             properties.processes = properties.dependencies.map( path => {
                 if ( _isTypeObject( _env[ path[ 0 ] ] ) ) {
                     if ( path.length === 1 ) return;
-                    return Observer.deep( _env[ path[ 0 ] ], path.slice( 1 ), Observer.observe, record_s => {
+                    return Observer.reduce( _env[ path[ 0 ] ], path.slice( 1 ), Observer.observe, record_s => {
                         rerenderCallback( ...getPaths( [ path[ 0 ] ], record_s ) );
                     } );
                 }
-                return Observer.deep( globalThis, path, Observer.observe, record_s => {
+                return Observer.reduce( globalThis, path, Observer.observe, record_s => {
                     rerenderCallback( ...getPaths( [], record_s ) );
                 } );
             } );
