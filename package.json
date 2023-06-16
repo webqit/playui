@@ -1,5 +1,5 @@
 {
-  "name": "@webqit/play-ui",
+  "name": "@webqit/playui",
   "title": "Play UI",
   "description": "Play UI development suite.",
   "keywords": [
@@ -18,6 +18,9 @@
   "type": "module",
   "scripts": {
     "postpublish": "git push && git push --tags"
+  },
+  "devDependencies": {
+    "@webqit/oohtml-ssr": "^1.2.15"
   },
   "author": "Oxford Harrison <oxharris.dev@gmail.com>",
   "maintainers": [
