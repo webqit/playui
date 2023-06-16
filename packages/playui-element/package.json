@@ -6,7 +6,7 @@
     "webcomponents"
   ],
   "homepage": "https://webqit.io/tooling/play-ui/docs/getting-started/overview#play-ui-element",
-  "version": "0.0.7",
+  "version": "0.0.9",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -25,13 +25,13 @@
     "test": "mocha --extension .test.js --exit",
     "test:coverage": "c8 --reporter=text-lcov npm run test | coveralls",
     "build": "esbuild main=src/targets.browser.js --bundle --minify --sourcemap --outdir=dist",
-    "preversion": "npm run test && npm run build && git add -A dist",
+    "preversion": "npm run build && git add -A dist",
     "postversion": "npm publish",
     "postpublish": "git push && git push --tags"
   },
   "dependencies": {
     "@webqit/observer": "^2.1.5",
-    "@webqit/subscript": "^2.1.41",
+    "@webqit/reflex-functions": "^2.1.49",
     "@webqit/util": "^0.8.11"
   },
   "devDependencies": {

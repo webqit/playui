@@ -35,10 +35,10 @@ const { Observer, PlayElement } = webqit;
 const localVar = 'Initial local value';
 window.globalVar = 'Initial global value';
 customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
-    static get contractFunctions() {
-        return [ 'render' ]; // List of methods that should be transformed to "contract" functions
+    static get reflexFunctions() {
+        return [ 'render' ]; // List of methods that should be transformed to "reflex" functions
     }
-    static get contractFunctionsEnv() {
+    static get reflexFunctionsEnv() {
         return { localVar }; // How to make the render() function see local variables.
     }
     prop = 'Initial local value';

@@ -7,26 +7,26 @@ import { _isFunction, _isTypeObject, _isObject } from '@webqit/util/js/index.js'
 /**
  * @PlayElementClassFactory
  */
-export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observer ) => class extends HTMLElement {
+export const PlayElementClassFactory = ( HTMLElement, ReflexFunction, Observer ) => class extends HTMLElement {
 
-    static get contractFunctions() {
+    static get reflexFunctions() {
         return [];
     }
 
-    static get contractFunctionsEnv() {
+    static get reflexFunctionsEnv() {
         return {};
     }
 
     constructor() {
         super();
         const _static = this.constructor;
-        Object.defineProperty( this, 'contractFunctionsInternals', { value: new Map } );
-        this._init = _static.contractFunctions.map( methodName => {
+        Object.defineProperty( this, 'reflexFunctionsInternals', { value: new Map } );
+        this._init = _static.reflexFunctions.map( methodName => {
             if ( !_isFunction( this[ methodName ] ) ) throw new Error( `[PLAY_ELEMENT]: ${ methodName } is not a method.` );
-            if ( methodName === 'constructor' ) throw new Error( `[PLAY_ELEMENT]: Class constructors cannot be subscript methods.` );
-            return _await( _static.contractCompile( this[ methodName ] ), ( [ contractFunction, properties ] ) => {
-                Object.defineProperty( this, methodName, { value: contractFunction } );
-                this.contractFunctionsInternals.set( methodName, properties );
+            if ( methodName === 'constructor' ) throw new Error( `[PLAY_ELEMENT]: Class constructors cannot be reflex methods.` );
+            return _await( _static.reflexCompile( this[ methodName ] ), ( [ reflexFunction, properties ] ) => {
+                Object.defineProperty( this, methodName, { value: reflexFunction } );
+                this.reflexFunctionsInternals.set( methodName, properties );
             } );
         } );
         if ( ( this._init = this._init.filter( x => x instanceof Promise ) ).length ) {
@@ -38,10 +38,10 @@ export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observe
         super.connectedCallback && super.connectedCallback();
         const _static = this.constructor;
         _await( this._init, () => {
-            _static.contractFunctions.forEach( methodName => {
+            _static.reflexFunctions.forEach( methodName => {
                 const returnValue = this[ methodName ]();
                 _await( returnValue, ( [ , rerenderCallback ] ) => {
-                    _static.contractBind( this.contractFunctionsInternals.get( methodName ), rerenderCallback, this );
+                    _static.reflexBind( this.reflexFunctionsInternals.get( methodName ), rerenderCallback, this );
                 } );
             } );
         } );
@@ -51,15 +51,15 @@ export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observe
         super.disconnectedCallback && super.disconnectedCallback();
         const _static = this.constructor;
         _await( this._init, () => {
-            _static.contractFunctions.forEach( methodName => {
-                _static.contractUnbind( this.contractFunctionsInternals.get( methodName ) );
+            _static.reflexFunctions.forEach( methodName => {
+                _static.reflexUnbind( this.reflexFunctionsInternals.get( methodName ) );
             } );
         } );
     }
 
     // ----------------------------------------------------------
 
-    static contractCompile( _function ) {
+    static reflexCompile( _function ) {
         let source = _function.toString();
         if ( _isFunction( _function ) ) {
             if ( !source.startsWith( 'function ' ) && !source.startsWith( 'function(' ) ) {
@@ -68,24 +68,24 @@ export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observe
             source = `\nreturn ${ source.replace( 'function', 'function **' ) }`;
         }
         let parameters = [];
-        if ( _isObject( this.contractFunctionsEnv ) ) {
-            parameters = [ `{ ${ Object.keys( this.contractFunctionsEnv ).join( ', ' ) } }` ];
+        if ( _isObject( this.reflexFunctionsEnv ) ) {
+            parameters = [ `{ ${ Object.keys( this.reflexFunctionsEnv ).join( ', ' ) } }` ];
         }
-        let __function = SubscriptFunction( parameters, source, {
+        let __function = ReflexFunction( parameters, source, {
             compilerParams: this.compilerParams,
             runtimeParams: this.runtimeParams,
         } );
-        if ( _isObject( this.contractFunctionsEnv ) ) {
-            return _await( __function( this.contractFunctionsEnv ), ( [ __function ] ) => {
-                return [ __function, SubscriptFunction.inspect( __function, 'properties' ) ];
+        if ( _isObject( this.reflexFunctionsEnv ) ) {
+            return _await( __function( this.reflexFunctionsEnv ), ( [ __function ] ) => {
+                return [ __function, ReflexFunction.inspect( __function, 'properties' ) ];
             } );
         }
-        return [ __function, SubscriptFunction.inspect( __function, 'properties' ) ];
+        return [ __function, ReflexFunction.inspect( __function, 'properties' ) ];
     }
 
-    static contractBind( properties, rerenderCallback, thisContext = undefined ) {
+    static reflexBind( properties, rerenderCallback, thisContext = undefined ) {
         _await( properties, properties => {
-            const _env = { ...( this.contractFunctionsEnv || {} ), 'this': thisContext };
+            const _env = { ...( this.reflexFunctionsEnv || {} ), 'this': thisContext };
             const getPaths = ( base, record_s ) => ( Array.isArray( record_s ) ? record_s : [ record_s ] ).map( record => [ ...base, ...( record.path || [ record.key ] ) ] );
             properties.processes = properties.dependencies.map( path => {
                 if ( _isTypeObject( _env[ path[ 0 ] ] ) ) {
@@ -101,7 +101,7 @@ export const PlayElementClassFactory = ( HTMLElement, SubscriptFunction, Observe
         } );
     }
     
-    static contractUnbind( properties ) {
+    static reflexUnbind( properties ) {
         _await( properties, properties => {
             properties?.processes.forEach( process => process?.abort() );
         } );

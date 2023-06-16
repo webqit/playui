@@ -5,10 +5,10 @@
 import { expect } from 'chai';
 import { delay, createDocument } from '../../../test/index.js';
 import { PlayElementClassFactory } from '../src/PlayElementClassFactory.js';
-import { SubscriptFunction } from '@webqit/subscript';
+import { ReflexFunction } from '@webqit/reflex-functions';
 import Observer from '@webqit/observer';
 
-const PlayElement = Element => PlayElementClassFactory( Element, SubscriptFunction, Observer );
+const PlayElement = Element => PlayElementClassFactory( Element, ReflexFunction, Observer );
 
 describe(`PlayElement`, function() {
 
@@ -19,14 +19,14 @@ describe(`PlayElement`, function() {
 
         // --------------
         class MyElement extends PlayElement( window.HTMLElement ) {
-            static get contractFunctions() {
+            static get reflexFunctions() {
                 return [ 'render' ];
             }
-            static get contractFunctionsEnv() {
+            static get reflexFunctionsEnv() {
                 return { results };
             }
             async render() {
-                results.push( this.newContent || 'Hello from Subscript!' );
+                results.push( this.newContent || 'Hello from Reflex!' );
             }
         }
         const results = [];
@@ -38,13 +38,13 @@ describe(`PlayElement`, function() {
             expect( myElement ).to.instanceOf( MyElement );
         } );
 
-        const token0 = 'Hello from Subscript!';
+        const token0 = 'Hello from Reflex!';
         it ( `"myElement.render()" should add string "${ token0 }" to result array...`, async function() {
             expect( results ).to.be.an( 'array' ).of.length( 1 );
             expect( results[ 0 ] ).to.eq( token0 );
         } );
 
-        const token1 = 'Hello again from Subscript!';
+        const token1 = 'Hello again from Reflex!';
         it ( `"myElement.render()" should add new string "${ token1 }" to result array - as observed via the Observer API...`, async function() {
             Observer.set( myElement, 'newContent', token1 );
             expect( results ).to.be.an( 'array' ).of.length( 2 );
@@ -58,7 +58,7 @@ describe(`PlayElement`, function() {
             expect( results[ 1 ] ).to.eq( token1 );
         } );
 
-        const token2 = 'Hello yet again from Subscript!';
+        const token2 = 'Hello yet again from Reflex!';
         it ( `"myElement.render()" should again be reactive on element being added to the DOM...`, async function() {
             document.body.appendChild( myElement );
             await delay( 0 );
