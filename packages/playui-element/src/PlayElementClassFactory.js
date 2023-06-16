@@ -77,10 +77,10 @@ export const PlayElementClassFactory = ( HTMLElement, ReflexFunction, Observer )
         } );
         if ( _isObject( this.reflexFunctionsEnv ) ) {
             return _await( __function( this.reflexFunctionsEnv ), ( [ __function ] ) => {
-                return [ __function, ReflexFunction.inspect( __function, 'properties' ) ];
+                return [ __function, ReflexFunction.inspect( __function ) ];
             } );
         }
-        return [ __function, ReflexFunction.inspect( __function, 'properties' ) ];
+        return [ __function, ReflexFunction.inspect( __function ) ];
     }
 
     static reflexBind( properties, rerenderCallback, thisContext = undefined ) {
