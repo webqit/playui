@@ -6,19 +6,9 @@
 
 <!-- /BADGES -->
 
-(**Part of the [Play UI](https://github.com/webqit/playui) suite**.)
+Build custom elements with no ergonomic or mental overheads! Playui Element lets you leverage technologies like [Reflex Functions](https://github.com/webqit/reflex-functions) and [OOHTML](https://github.com/webqit/oohtml) to write reactive logic without a compile step or any manual work!
 
-Install in Nodejs:
-
-```shell
-npm i @webqit/playui-element
-```
-
-```js
-import PlayElement from './PlayElement.js';
-```
-
-Embeded in HTML:
+<details><summary>Load from a CDN</summary>
 
 ```html
 <!-- Add the OOHTML dependency -->
@@ -26,27 +16,55 @@ Embeded in HTML:
 <script src="https://unpkg.com/@webqit/playui-element/dist/main.js"></script>
 ```
 
+```js
+const { Observer, PlayElement } = window.webqit;
+```
+
+</details>
+
+<details><summary>Install from NPM</summary>
+
+```shell
+npm i @webqit/playui-element @webqit/reflex-functions @webqit/observer
+```
+
+```js
+import { PlayElementClassFactory } from '@webqit/playui-element';
+import { ReflexFunction } from '@webqit/reflex-function';
+import Observer from '@webqit/observer';
+// Define PlayElement
+function PlayElement( HTMLElement ) {
+    return PlayElementClassFactory( HTMLElement, ReflexFunction, Observer );
+}
+```
+
+</details>
+
 Build Custom elements with it:
 
 ```js
-const { Observer, PlayElement } = webqit;
-
 // Anatomy
 const localVar = 'Initial local value';
 window.globalVar = 'Initial global value';
 customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
+
+    // List of methods that should be transformed to "reflex" functions
     static get reflexFunctions() {
-        return [ 'render' ]; // List of methods that should be transformed to "reflex" functions
+        return [ 'render' ];
     }
+
+    // How to make the render() function see local variables.
     static get reflexFunctionsEnv() {
-        return { localVar }; // How to make the render() function see local variables.
+        return { localVar };
     }
+
     prop = 'Initial local value';
     render() {
-        console.log( 'Instance prop:', this.prop );
-        console.log( 'Local variable', localVar );
         console.log( 'Global variable', globalVar );
+        console.log( 'Local variable', localVar );
+        console.log( 'Instance prop:', this.prop );
     }
+
 } );
 ```
 
