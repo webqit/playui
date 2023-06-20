@@ -44,8 +44,8 @@ Build Custom elements with it:
 
 ```js
 // Anatomy
-const localVar = { content: 'Initial local value' };
-window.globalVar = 'Initial global value';
+const localVar = { content: 'Initial value' };
+window.globalVar = 'Initial value';
 customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
 
     // List of methods that should be transformed to "reflex" functions
@@ -58,10 +58,10 @@ customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
         return { localVar };
     }
 
-    prop = 'Initial local value';
+    prop = 'Initial value';
     render() {
-        console.log( 'Global variable', globalVar );
-        console.log( 'Local variable', localVar.content );
+        console.log( 'Global variable:', globalVar );
+        console.log( 'Local variable:', localVar.content );
         console.log( 'Instance prop:', this.prop );
     }
 
@@ -76,9 +76,9 @@ customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
 // The automatic reactivity part
 const elem = document.querySelector( 'my-element' );
 setTimeout( () => {
-    Observer.set( globalThis, 'globalVar', 'New global value' );
-    Observer.set( localVar, 'content', 'New local content' );
-    Observer.set( elem, 'prop', 'New instance prop' );
+    Observer.set( globalThis, 'globalVar', 'New value' );
+    Observer.set( localVar, 'content', 'New value' );
+    Observer.set( elem, 'prop', 'New value' );
 }, 5000 );
 ```
 
