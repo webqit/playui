@@ -82,6 +82,6 @@ setTimeout( () => {
 }, 5000 );
 ```
 
-## Back to Home
+## The PlayUI project
 
-+ [The PlayUI project](https://github.com/webqit/playui)
++ [Project Home](https://github.com/webqit/playui)

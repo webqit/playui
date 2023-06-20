@@ -6,11 +6,48 @@
 
 <!-- /BADGES -->
 
-Play UI JavaScript is a resilient, jQuery-inspired, DOM and UI abstraction library. It offers simple, but powerful, JavaScript functions that do a good job at interacting with the DOM and UI, following the most-performant way. And it's a succint API surface you'll love! ([`.html()`](https://webqit.io/tooling/play-ui/docs/api/dom/html), [`.play()`](https://webqit.io/tooling/play-ui/docs/api/ui/play), [`.on()`](https://webqit.io/tooling/play-ui/docs/api/ui/on), [`.off()`](https://webqit.io/tooling/play-ui/docs/api/ui/off), etc.)
+Play UI JavaScript is a resilient, jQuery-inspired, DOM and UI abstraction library. It offers simple, but powerful, JavaScript functions that do a good job at interacting with the DOM and UI, following the most-performant way. And it's a succint API surface you'll love! ([`.html()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/html), [`.play()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/play), [`.on()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/on), [`.off()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/off), etc.)
+
+<details><summary>Load from a CDN</summary>
+
+```html
+<script src="https://unpkg.com/@webqit/playui-js/dist/main.js"></script>
+```
+
+```js
+const { $ } = window.webqit;
+```
+
+</details>
+
+<details><summary>Install from NPM</summary>
+
+```shell
+npm i @webqit/playui-js
+```
+
+```js
+// Import the initializer
+import PlayUI from '@webqit/playui-js';
+// Initialize
+const $ = PlayUI();
+```
+
+And you can selectively import Play UI's descrete parts to streamline your imports to your needs. The API reference has the *import* syntax for each of Play UI's functions. For example:
+
+```js
+// Import a function...
+import { htmlSync as html } from '@webqit/playui-js/src/dom/index.js';
+
+// Supply an element as first argument...
+html(selector, 'Play away!');
+```
+
+</details>
 
 ## Use as You Would [jQuery](https://jquery.com)
 
-[Include Play UI](https://webqit.io/tooling/play-ui/docs/getting-started/download#play-ui-javascript) on any page and use as you would jQuery. Play UI looks and feels just like it!
+Include PlayUI on any page and use as you would jQuery. (Feels just like it!)
 
 Simply obtain the *constructable Play UI function* (`$`) as shown below.
 
@@ -43,7 +80,7 @@ Construct instances with the `new` operator or by calling the function staticall
 $(selector).html('Some fun!');
 ```
 
-Now, while total parity with jQuery's design isn't the goal, there exists good similarity: [`.html()`](https://webqit.io/tooling/play-ui/docs/api/dom/html), [`.append()`](../../api/dom/append), [`.prepend()`](https://webqit.io/tooling/play-ui/docs/api/dom/prepend), [`.attr()`](https://webqit.io/tooling/play-ui/docs/api/dom/attr), [`.css()`](https://webqit.io/tooling/play-ui/docs/api/css/css), [`.data()`](https://webqit.io/tooling/play-ui/docs/api/app/data), [`.on()`](https://webqit.io/tooling/play-ui/docs/api/ui/on), [`.off()`](https://webqit.io/tooling/play-ui/docs/api/ui/off), [`.trigger()`](../../api/ui/trigger).
+Now, while total parity with jQuery's design isn't the goal, there exists good similarity: [`.html()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/html), [`.append()`](../../api/dom/append), [`.prepend()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/prepend), [`.attr()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/attr), [`.css()`](https://github.com/webqit/playui/wiki/playui-js/api/css/css), [`.data()`](https://github.com/webqit/playui/wiki/playui-js/api/app/data), [`.on()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/on), [`.off()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/off), [`.trigger()`](../../api/ui/trigger).
 
 ## Use With Server-Side DOM Instances
 
@@ -92,7 +129,7 @@ $$('.some-element-in-document-2').append('This is for you!');
 
 ## Use as Descrete Utilities
 
-Play UI's instance methods are internally based on certain core standalone functions which may be imported and used individually. The [`.on()`](https://webqit.io/tooling/play-ui/docs/api/ui/on) instance method, for example, is based on the standalone [`$.ui.on()`](https://webqit.io/tooling/play-ui/docs/api/ui/on#static-usage) function.
+Play UI's instance methods are internally based on certain core standalone functions which may be imported and used individually. The [`.on()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/on) instance method, for example, is based on the standalone [`$.ui.on()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/on#static-usage) function.
 
 ```js
 const ( on ) = $.ui;
@@ -146,7 +183,7 @@ $.ui.on(selector, 'swipeleft', e => {
 
 Surgically updating the UI is generally a costly operation for browsers. It happens when we write to the DOM and read from it in quick succession in a rendering cycle - causing document reflows, or better put, forced synchronous layout. (But a common word is *layout thrashing*.) This is covered in detail in [this article on Web Fundamentals](https://developers.google.com/web/fundamentals/performance/rendering/avoid-large-complex-layouts-and-layout-thrashing).
 
-Play UI meets this challenge with a simple timing strategy that keeps UI manipulation in sync with the browser's rendering cycle. To do this, DOM operations are internally held in read/write queues, then executed in read/write batches within each rendering cycle, eliminating the forced synchronous layout problem. This is what happens under the hood with all of the Play UI functions that have the *Async* suffix; e.g [`htmlAsync()`](https://webqit.io/tooling/play-ui/docs/api/dom/htmlAsync). The asynchronous nature of these functions bring them under the term *Async UI*.
+Play UI meets this challenge with a simple timing strategy that keeps UI manipulation in sync with the browser's rendering cycle. To do this, DOM operations are internally held in read/write queues, then executed in read/write batches within each rendering cycle, eliminating the forced synchronous layout problem. This is what happens under the hood with all of the Play UI functions that have the *Async* suffix; e.g [`htmlAsync()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/htmlAsync). The asynchronous nature of these functions bring them under the term *Async UI*.
 
 The order of execution of the code below demonstrates the asynchronous nature of these functions.
 
@@ -225,6 +262,6 @@ $(document.body).html('Hi');
 console.log('Completed: write operation 1');
 ```
 
-## Back to Home
+## The PlayUI project
 
-+ [The PlayUI project](https://github.com/webqit/playui)
++ [Project Home](https://github.com/webqit/playui)
