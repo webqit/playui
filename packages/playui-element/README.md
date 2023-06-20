@@ -6,7 +6,7 @@
 
 <!-- /BADGES -->
 
-Build custom elements with no ergonomic or mental overheads! Playui Element lets you leverage technologies like [Reflex Functions](https://github.com/webqit/reflex-functions), [Observer API](https://github.com/webqit/observer) and [OOHTML](https://github.com/webqit/oohtml) to write reactive logic without a compile step or any manual work!
+Build custom elements with no ergonomic or mental overheads! PlayUI Element lets you leverage technologies like [OOHTML](https://github.com/webqit/oohtml) - which itself brings [Reflex Functions](https://github.com/webqit/reflex-functions) and [Observer API](https://github.com/webqit/observer) - to write reactive logic without a compile step or any manual work!
 
 <details><summary>Load from a CDN</summary>
 
@@ -81,3 +81,7 @@ setTimeout( () => {
     Observer.set( elem, 'prop', 'New instance prop' );
 }, 5000 );
 ```
+
+## Back to Home
+
++ [The PlayUI project](https://github.com/webqit/playui)

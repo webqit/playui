@@ -1,4 +1,4 @@
-# Play UI JS
+# PlayUI Form
 
 <!-- BADGES/ -->
 
@@ -6,4 +6,6 @@
 
 <!-- /BADGES -->
 
-(**Part of the [Play UI](https://github.com/webqit/play-ui) suite**.).
+## Back to Home
+
++ [The PlayUI project](https://github.com/webqit/playui)
