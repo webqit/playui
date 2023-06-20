@@ -44,7 +44,7 @@ Build Custom elements with it:
 
 ```js
 // Anatomy
-const localVar = 'Initial local value';
+const localVar = { content: 'Initial local value' };
 window.globalVar = 'Initial global value';
 customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
 
@@ -61,7 +61,7 @@ customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
     prop = 'Initial local value';
     render() {
         console.log( 'Global variable', globalVar );
-        console.log( 'Local variable', localVar );
+        console.log( 'Local variable', localVar.content );
         console.log( 'Instance prop:', this.prop );
     }
 
@@ -76,7 +76,8 @@ customElements.define( 'my-element', class extends PlayElement( HTMLElement ) {
 // The automatic reactivity part
 const elem = document.querySelector( 'my-element' );
 setTimeout( () => {
-    Observer.set( elem, 'prop', 'New local value' );
     Observer.set( globalThis, 'globalVar', 'New global value' );
+    Observer.set( localVar, 'content', 'New local content' );
+    Observer.set( elem, 'prop', 'New instance prop' );
 }, 5000 );
 ```
