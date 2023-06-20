@@ -17,7 +17,7 @@ Build custom elements with no ergonomic or mental overheads! PlayUI Element lets
 ```
 
 ```js
-const { Observer, PlayElement } = window.webqit;
+const { PlayElement, Observer } = window.webqit;
 ```
 
 </details>
