@@ -33,7 +33,7 @@ import PlayUI from '@webqit/playui-js';
 const $ = PlayUI();
 ```
 
-And you can selectively import Play UI's descrete parts to streamline your imports to your needs. The API reference has the *import* syntax for each of Play UI's functions. For example:
+And you can selectively import Play UI's descrete parts to streamline your imports to your needs. The API reference has the *import* syntax for each of PlayUI's functions. For example:
 
 ```js
 // Import a function...
@@ -80,7 +80,7 @@ Construct instances with the `new` operator or by calling the function staticall
 $(selector).html('Some fun!');
 ```
 
-Now, while total parity with jQuery's design isn't the goal, there exists good similarity: [`.html()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/html), [`.append()`](../../api/dom/append), [`.prepend()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/prepend), [`.attr()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/attr), [`.css()`](https://github.com/webqit/playui/wiki/playui-js/api/css/css), [`.data()`](https://github.com/webqit/playui/wiki/playui-js/api/app/data), [`.on()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/on), [`.off()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/off), [`.trigger()`](../../api/ui/trigger).
+Now, while total parity with jQuery's design isn't the goal, there exists good similarity: [`.html()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/html), [`.append()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/append), [`.prepend()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/prepend), [`.attr()`](https://github.com/webqit/playui/wiki/playui-js/api/dom/attr), [`.css()`](https://github.com/webqit/playui/wiki/playui-js/api/css/css), [`.data()`](https://github.com/webqit/playui/wiki/playui-js/api/app/data), [`.on()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/on), [`.off()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/off), [`.trigger()`](https://github.com/webqit/playui/wiki/playui-js/api/ui/trigger).
 
 ## Use With Server-Side DOM Instances
 
